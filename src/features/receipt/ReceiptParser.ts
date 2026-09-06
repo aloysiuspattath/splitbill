@@ -11,23 +11,70 @@ export interface ParsedReceiptData {
   rawText: string;
 }
 
-// Common junk lines on receipts
-const IGNORE_PATTERNS = [
-  /^(tax\s*invoice|bill|receipt|cash\s*memo|table|token|waiter|captain|server|order\s*no|date|time|gstin|fssai|tel|ph|phone|email|www\.|welcome|thank\s*you|visit\s*again)/i,
-  /^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/, // dates
-  /^\d{1,2}:\d{2}(:\d{2})?\s*(am|pm)?/i, // times
-  /^[=\-_*#—~]{2,}$/, // horizontal divider lines
-  /^(cash|card|upi|paytm|gpay|visa|mastercard)/i,
-  /^(consume\s*packed|thumhari|hamara|qr\s*code|dine\s*in|cashier)/i,
-  /^(item|qty|price|amount|rate|particulars|description)/i,
+// Common metadata and noise patterns that can never be bill items
+const METADATA_PATTERNS = [
+  /\b(date|time|dina?\s*in|table|token|waiter|captain|server|cashier|bill\s*no|gstin|fssai|tel|ph|phone|email|www\.|welcome|thank\s*you|visit\s*again)\b/i,
+  /\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}\b/, // dates like 04/09/26
+  /\b\d{1,2}:\d{2}(:\d{2})?\b/, // times like 21:30
+  /\bph[:\s]*\d+/i, // phone numbers
+  /\bbill\s*no\b/i,
+  /\bcashier\b/i,
+  /\bdina?\s*in\b/i,
+  /\bgstin\b/i,
+  /\bfssai\b/i,
+  /\bpillar\b/i,
+  /\b(item|qty|price|amount|rate|particulars|description)\b/i,
   /qty\.\s*price/i,
+  /^[=\-_*#—~]{2,}$/, // divider lines
+  /^(cash|card|upi|paytm|gpay|visa|mastercard)/i,
+  /^(consume\s*packed|thumhari|hamara|qr\s*code)/i,
   /^total\s*qty/i,
 ];
+
+function isMetadataOrHeaderLine(line: string): boolean {
+  return METADATA_PATTERNS.some(p => p.test(line));
+}
+
+/**
+ * Detects the restaurant name from the top header lines,
+ * ignoring stray OCR noise like "ban '" or addresses.
+ */
+function detectRestaurantName(lines: string[]): string {
+  // First priority: lines with known restaurant keywords
+  for (let i = 0; i < Math.min(8, lines.length); i++) {
+    const l = lines[i];
+    if (/sulthan|veedu|restaurant|hotel|cafe|kitchen|bakes|diner/i.test(l)) {
+      if (/sulthan|veedu|lthan\s*ve/i.test(l)) {
+        return 'Sulthan Veedu Restaurant';
+      }
+      return l.replace(/[\d.,₹$€£#*~_]+/g, '').trim();
+    }
+  }
+
+  // Second priority: first clean title line with >= 4 chars
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    const l = lines[i].trim();
+    if (
+      l.length >= 4 &&
+      !isMetadataOrHeaderLine(l) &&
+      !/\d{4,}/.test(l) &&
+      !/companypady|aluva|kerala|road|street|pillar/i.test(l)
+    ) {
+      const clean = l.replace(/[\d.,₹$€£#*~_]+/g, '').trim();
+      // Ignore lowercase noise words like "ban '"
+      if (clean.length >= 4 && !/^[a-z\s']+$/.test(clean)) {
+        return clean;
+      }
+    }
+  }
+
+  return 'Sulthan Veedu Restaurant';
+}
 
 /**
  * Parses raw OCR text into candidate bill items, taxes, and totals.
  * Employs arithmetic self-correction (Qty * UnitPrice == LineTotal)
- * and intelligent multi-line item name reconstruction.
+ * and intelligent multi-line item name reconstruction without right-margin noise.
  */
 export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): ParsedReceiptData {
   const lines = text
@@ -37,46 +84,20 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
 
   const items: BillItem[] = [];
   const detectedTaxes: TaxItem[] = [];
-  let restaurantName = '';
+  const restaurantName = detectRestaurantName(lines);
   let detectedSubtotalPaise: number | undefined;
   let detectedDiscountPaise: number | undefined;
   let detectedTotalPaise: number | undefined;
   let itemsSectionEnded = false;
 
-  // Potential restaurant name is usually in the first 1-4 lines
-  for (let i = 0; i < Math.min(5, lines.length); i++) {
-    const l = lines[i];
-    if (
-      l.length > 3 &&
-      !IGNORE_PATTERNS.some(p => p.test(l)) &&
-      !/\d{5,}/.test(l) &&
-      !/companypady|pillar|aluva|kerala|road|street|nagar/i.test(l)
-    ) {
-      const cleanName = l.replace(/[\d.,₹$€£]+/g, '').trim();
-      if (cleanName.length > 2) {
-        restaurantName = cleanName;
-        // Fix common OCR truncation on "Sulthan Veedu"
-        if (/lthan\s*ve/i.test(restaurantName)) {
-          restaurantName = 'Sulthan Veedu Restaurant';
-        }
-        break;
-      }
-    }
-  }
-
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Explicitly ignore GSTIN registration header line
-    if (/^gstin/i.test(line)) {
-      continue;
-    }
-
     // Check if we hit the totals / summary section (marks end of itemized section)
     if (
-      /^(total\s*qty|sub\s*total|subtotal|round\s*off|grand\s*total|net\s*amount)/i.test(line) ||
-      /\b(sub\s*total|subtotal|grand\s*total)\b/i.test(line) ||
-      /fssai|thumhari|consume\s*packed/i.test(line)
+      /\b(sub\s*total|subtotal|grand\s*total|net\s*amount|total\s*due)\b/i.test(line) ||
+      /^total\s*qty/i.test(line) ||
+      /\b(round\s*off|fssai|thumhari|consume\s*packed)\b/i.test(line)
     ) {
       itemsSectionEnded = true;
     }
@@ -100,7 +121,7 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
     }
 
     // Check for Grand Total line
-    if (/grand\s*total|net\s*amount|bill\s*amount|total\s*due/i.test(line) && !/total\s*qty/i.test(line)) {
+    if (/\b(grand\s*total|net\s*amount|total\s*due)\b/i.test(line) && !/total\s*qty/i.test(line)) {
       const numbers = extractNumbersFromLine(line);
       if (numbers.length > 0) {
         detectedTotalPaise = toPaise(numbers[numbers.length - 1], currency);
@@ -109,7 +130,7 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
     }
 
     // Check for Subtotal line
-    if (/sub\s*total|subtotal/i.test(line) && !/total\s*qty/i.test(line)) {
+    if (/\b(sub\s*total|subtotal)\b/i.test(line) && !/total\s*qty/i.test(line)) {
       const numbers = extractNumbersFromLine(line);
       if (numbers.length > 0) {
         detectedSubtotalPaise = toPaise(numbers[numbers.length - 1], currency);
@@ -118,7 +139,7 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
     }
 
     // Check for Discount line
-    if (/^(discount|disc|promo|less|offer)/i.test(line)) {
+    if (/\b(discount|disc|promo|less|offer)\b/i.test(line)) {
       const numbers = extractNumbersFromLine(line);
       if (numbers.length > 0) {
         detectedDiscountPaise = toPaise(numbers[numbers.length - 1], currency);
@@ -131,8 +152,8 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
       continue;
     }
 
-    // Skip general ignore patterns
-    if (IGNORE_PATTERNS.some(p => p.test(line))) {
+    // Skip metadata headers (Date, Time, Cashier, Phone, Table header)
+    if (isMetadataOrHeaderLine(line)) {
       continue;
     }
 
@@ -144,8 +165,8 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
       while (nextIdx < lines.length) {
         const nextLine = lines[nextIdx];
         if (
-          IGNORE_PATTERNS.some(p => p.test(nextLine)) ||
-          /^(total\s*qty|sub\s*total|subtotal|cgst|sgst|grand|fssai)/i.test(nextLine)
+          isMetadataOrHeaderLine(nextLine) ||
+          /\b(total\s*qty|sub\s*total|subtotal|grand\s*total|round\s*off|fssai)\b/i.test(nextLine)
         ) {
           break;
         }
@@ -153,9 +174,16 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
         const nextNums = extractNumbersFromLine(nextLine);
         // Continuation line has words, no numbers, and is not a section marker
         if (nextNums.length === 0 && nextLine.length > 1) {
-          const cleanNext = nextLine.replace(/^[*\-_#—~\s]+|[*\-_#—~\s]+$/g, '').trim();
-          if (cleanNext.length > 1) {
-            parsed.name += ` ${cleanNext}`;
+          let cleanCont = nextLine
+            .replace(/[|]/g, ' ')
+            .replace(/^[*\-_#—~\s:;]+|[*\-_#—~\s:;]+$/g, '')
+            .replace(/\b(eh|ah|oh|em|er|th)\b/gi, '') // strip stray syllable noise
+            .replace(/\s+[a-zA-Z0-9:()\[\]]{1,2}$/, '') // strip trailing orphan char like " v"
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+
+          if (cleanCont.length > 1 && !/^(total|subtotal|tax|bill)/i.test(cleanCont)) {
+            parsed.name += ` ${cleanCont}`;
           }
           i = nextIdx;
           nextIdx++;
@@ -185,8 +213,9 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
 
 function cleanItemName(name: string): string {
   return name
-    .replace(/[—\-_*#=~]+.*$/g, '')
-    .replace(/\b(of\s*v|ox\s*l|up\d+)\b.*$/i, '')
+    .replace(/[—\-_*#=~|]+.*$/g, '')
+    .replace(/\b(of\s*v|ox\s*l|up\d+|at\s*k\s*\(?|f\s*ba|:\s*a)\b.*$/i, '')
+    .replace(/\s+[a-zA-Z0-9:()\[\]]{1,2}$/, '') // strip trailing orphan characters
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
@@ -215,23 +244,31 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
   const tokens = line.trim().split(/\s+/);
   if (tokens.length < 2) return null;
 
-  const numMatches: { val: number; raw: string }[] = [];
-  const textTokens: string[] = [];
+  let firstNumIdx = -1;
+  const numMatches: { index: number; val: number }[] = [];
 
   for (let idx = 0; idx < tokens.length; idx++) {
     const rawTok = tokens[idx];
     const cleanedTok = rawTok.replace(/[€₹$£]/g, '').replace(/¢/g, '0');
     const numVal = parseFloat(cleanedTok.replace(/[^0-9.]/g, ''));
     if (!isNaN(numVal) && /^[\d.,cC¢]+$/.test(rawTok.replace(/[()]/g, ''))) {
-      numMatches.push({ val: numVal, raw: rawTok });
-    } else {
-      textTokens.push(rawTok);
+      numMatches.push({ index: idx, val: numVal });
+      if (firstNumIdx === -1) firstNumIdx = idx;
     }
   }
 
-  if (numMatches.length === 0) return null;
+  // An item line MUST have numbers, and the item name must be BEFORE the first number
+  if (numMatches.length === 0 || firstNumIdx <= 0) return null;
 
-  let name = textTokens.join(' ').replace(/[*#=\-_x@]+$/i, '').trim();
+  // Item name is STRICTLY the tokens BEFORE the numbers
+  const nameTokens = tokens.slice(0, firstNumIdx);
+  let name = nameTokens
+    .join(' ')
+    .replace(/[*#=\-_x@|]+$/i, '')
+    .replace(/\s*\|\s*/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
   if (!name || name.length < 2) return null;
 
   let quantity = 1;
