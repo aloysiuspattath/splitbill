@@ -22,7 +22,7 @@ export function generateShareText(
     lines.push(`${person.personName} — ${formatMoney(person.totalPaise, currency)}`);
     if (includeItemized && person.assignedItems.length > 0) {
       person.assignedItems.forEach(item => {
-        lines.push(`   • ${item.itemName}: ${formatMoney(item.sharePaise, currency)}`);
+        lines.push(`   • ${item.itemName}${item.details ? ` (${item.details})` : ''}: ${formatMoney(item.sharePaise, currency)}`);
       });
       if (person.taxSharePaise > 0) {
         lines.push(`   • Tax: ${formatMoney(person.taxSharePaise, currency)}`);

@@ -4,9 +4,13 @@ import App from './App';
 import './styles/index.css';
 import { registerSW } from 'virtual:pwa-register';
 import { cleanupReloadParam } from './utils/cacheManager';
+import { checkForAppUpdate } from './utils/versionCheck';
 
 // Clean up any cache-busting URL parameter from force reloads
 cleanupReloadParam();
+
+// Check for newer deployment immediately on app launch
+checkForAppUpdate();
 
 // Auto-reload window when a newly installed service worker takes control
 let refreshing = false;
@@ -17,6 +21,21 @@ navigator.serviceWorker?.addEventListener('controllerchange', () => {
   }
 });
 
+// Check for new deployments whenever user switches back to the app or focuses
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    checkForAppUpdate();
+  }
+});
+window.addEventListener('focus', () => {
+  checkForAppUpdate();
+});
+
+// Also check periodically every 10 minutes
+setInterval(() => {
+  checkForAppUpdate();
+}, 10 * 60 * 1000);
+
 // Register PWA Service Worker with aggressive update checks on mobile
 const updateSW = registerSW({
   immediate: true,
@@ -25,19 +44,14 @@ const updateSW = registerSW({
   },
   onRegisteredSW(_swUrl, registration) {
     if (registration) {
-      // Check for updates every 15 minutes
       setInterval(() => {
         registration.update().catch(() => {});
-      }, 15 * 60 * 1000);
+      }, 10 * 60 * 1000);
 
-      // Check for updates whenever mobile user switches back to the app/tab
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
           registration.update().catch(() => {});
         }
-      });
-      window.addEventListener('focus', () => {
-        registration.update().catch(() => {});
       });
     }
   },

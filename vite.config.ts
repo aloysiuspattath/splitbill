@@ -3,10 +3,30 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
+import fs from 'fs';
+
+const buildTimestamp = Date.now();
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    __BUILD_TIMESTAMP__: buildTimestamp,
+  },
   plugins: [
     react(),
+    {
+      name: 'version-generator',
+      buildStart() {
+        try {
+          fs.writeFileSync(
+            path.resolve(__dirname, 'public/version.json'),
+            JSON.stringify({ buildTime: buildTimestamp, version: `1.0.${buildTimestamp}` }, null, 2)
+          );
+        } catch (e) {
+          console.warn('Could not write version.json:', e);
+        }
+      },
+    },
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'receipt-icon.svg'],
@@ -41,11 +61,16 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        globIgnores: ['**/tesseract/**'],
+        globIgnores: ['**/tesseract/**', '**/version.json'],
+        navigateFallbackDenylist: [/^\/version\.json/],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
         runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname === '/version.json',
+            handler: 'NetworkOnly',
+          },
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/tesseract/'),
             handler: 'CacheFirst',

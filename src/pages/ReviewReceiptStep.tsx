@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit3, ArrowRight, Store, Calendar, Check, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Edit3, ArrowRight, Store, Calendar, Check, AlertCircle, Scissors } from 'lucide-react';
 import { BillItem, CurrencyCode } from '../types';
 import { formatMoney, toPaise, fromPaise } from '../utils/currency';
 
@@ -71,6 +71,33 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
 
   const handleDeleteItem = (id: string) => {
     onUpdateItems(items.filter(it => it.id !== id));
+  };
+
+  const handleSplitItem = (itemToSplit: BillItem) => {
+    if (itemToSplit.quantity <= 1) return;
+    const count = Math.floor(itemToSplit.quantity);
+    const unitPrice = itemToSplit.unitPricePaise;
+    const baseName = itemToSplit.name.replace(/\s*x\s*\d+$/i, '').trim();
+
+    const newItems: BillItem[] = Array.from({ length: count }, (_, i) => ({
+      id: `item-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 5)}`,
+      name: `${baseName} #${i + 1}`,
+      quantity: 1,
+      unitPricePaise: unitPrice,
+      totalPricePaise: unitPrice,
+      assignedPersonIds: [],
+      assignments: [],
+    }));
+
+    const itemIndex = items.findIndex(it => it.id === itemToSplit.id);
+    if (itemIndex === -1) return;
+
+    const updated = [
+      ...items.slice(0, itemIndex),
+      ...newItems,
+      ...items.slice(itemIndex + 1),
+    ];
+    onUpdateItems(updated);
   };
 
   const handleAddItem = (e: React.FormEvent) => {
@@ -236,6 +263,17 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
                       {formatMoney(item.unitPricePaise, currency)}
                       {item.quantity > 1 && <span className="text-brand-500 font-bold ml-1">x{item.quantity}</span>}
                     </p>
+                    {item.quantity > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleSplitItem(item)}
+                        className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/60 dark:hover:bg-brand-900/60 text-brand-600 dark:text-brand-400 text-[10px] font-bold transition-colors shadow-2xs"
+                        title={`Split ${item.name} into ${item.quantity} individual items`}
+                      >
+                        <Scissors className="w-3 h-3" />
+                        <span>Split into {item.quantity} items</span>
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -244,6 +282,15 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
                     </span>
 
                     <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                      {item.quantity > 1 && (
+                        <button
+                          onClick={() => handleSplitItem(item)}
+                          className="p-2 rounded-[12px] text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-[#1c1c1e] transition-colors"
+                          title={`Split into ${item.quantity} individual items`}
+                        >
+                          <Scissors className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => handleStartEdit(item)}
                         className="p-2 rounded-[12px] text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-[#1c1c1e] transition-colors"

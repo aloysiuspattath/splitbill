@@ -14,12 +14,12 @@ export interface Person {
   color: string;  // color class or hex for badge/avatar ring
 }
 
-export type SplitMode = 'equal' | 'percentage' | 'amount';
+export type SplitMode = 'equal' | 'percentage' | 'amount' | 'shares';
 
 export interface ItemAssignment {
   personId: string;
   mode: SplitMode;
-  value?: number; // percentage (0-100) or amount in paise/cents
+  value?: number; // percentage (0-100), amount in paise/cents, or shares/portions (e.g. 0.5, 1, 2)
 }
 
 export interface BillItem {

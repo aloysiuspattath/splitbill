@@ -368,4 +368,108 @@ describe('Calculation Engine - Business Scenarios', () => {
       expect(p.assignedItems.length).toBeGreaterThan(0);
     });
   });
+
+  it('splits items by portions/shares (Beef Curry x2: Boy A & B 0.5 each, Boy C 1.0)', () => {
+    // 2 beef curries @ ₹350 = ₹700 (70000 paise)
+    // Boy A: 0.5 curry (share = 17500 paise = ₹175)
+    // Boy B: 0.5 curry (share = 17500 paise = ₹175)
+    // Boy C: 1.0 curry (share = 35000 paise = ₹350)
+    const bill: Bill = {
+      id: 'test-portion-split',
+      restaurantName: 'Curry Point',
+      date: '2026-09-07',
+      currency: 'INR',
+      items: [
+        {
+          id: 'beef-curry-x2',
+          name: 'Beef Curry x2',
+          quantity: 2,
+          unitPricePaise: 35000,
+          totalPricePaise: 70000,
+          assignedPersonIds: ['boy-a', 'boy-b', 'boy-c'],
+          assignments: [
+            { personId: 'boy-a', mode: 'shares', value: 0.5 },
+            { personId: 'boy-b', mode: 'shares', value: 0.5 },
+            { personId: 'boy-c', mode: 'shares', value: 1.0 },
+          ],
+        },
+      ],
+      people: [
+        { id: 'boy-a', name: 'Boy A', avatar: '👦', color: '#2563eb' },
+        { id: 'boy-b', name: 'Boy B', avatar: '🧒', color: '#10b981' },
+        { id: 'boy-c', name: 'Boy C', avatar: '🧑', color: '#f59e0b' },
+      ],
+      taxes: [],
+      discount: { type: 'none', allocationMethod: 'proportional' },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    const res = calculateBill(bill);
+    expect(res.subtotalPaise).toBe(70000);
+    expect(res.effectiveBillTotalPaise).toBe(70000);
+    expect(res.isBalanced).toBe(true);
+    expect(res.roundingDifferencePaise).toBe(0);
+
+    const boyA = res.personShares.find(p => p.personId === 'boy-a')!;
+    const boyB = res.personShares.find(p => p.personId === 'boy-b')!;
+    const boyC = res.personShares.find(p => p.personId === 'boy-c')!;
+
+    expect(boyA.itemsSharePaise).toBe(17500); // ₹175.00
+    expect(boyA.totalPaise).toBe(17500);
+    expect(boyA.assignedItems[0].details).toBe('0.5 of 2 portions');
+
+    expect(boyB.itemsSharePaise).toBe(17500); // ₹175.00
+    expect(boyB.totalPaise).toBe(17500);
+    expect(boyB.assignedItems[0].details).toBe('0.5 of 2 portions');
+
+    expect(boyC.itemsSharePaise).toBe(35000); // ₹350.00
+    expect(boyC.totalPaise).toBe(35000);
+    expect(boyC.assignedItems[0].details).toBe('1 of 2 portions');
+  });
+
+  it('splits portions with fractional taxes and zero rounding error', () => {
+    // 2 items @ ₹333 = ₹666.00 (66600 paise) + 5% GST (3330 paise) = ₹699.30 (69930 paise)
+    const bill: Bill = {
+      id: 'test-portion-tax',
+      restaurantName: 'Spice House',
+      date: '2026-09-07',
+      currency: 'INR',
+      items: [
+        {
+          id: 'dish-1',
+          name: 'Special Platter',
+          quantity: 2,
+          unitPricePaise: 33300,
+          totalPricePaise: 66600,
+          assignedPersonIds: ['p1', 'p2', 'p3'],
+          assignments: [
+            { personId: 'p1', mode: 'shares', value: 0.5 },
+            { personId: 'p2', mode: 'shares', value: 0.5 },
+            { personId: 'p3', mode: 'shares', value: 1.0 },
+          ],
+        },
+      ],
+      people: [
+        { id: 'p1', name: 'User 1', avatar: '1️⃣', color: '#2563eb' },
+        { id: 'p2', name: 'User 2', avatar: '2️⃣', color: '#10b981' },
+        { id: 'p3', name: 'User 3', avatar: '3️⃣', color: '#f59e0b' },
+      ],
+      taxes: [{ id: 'tax-1', name: 'GST', type: 'percentage', rate: 5 }],
+      discount: { type: 'none', allocationMethod: 'proportional' },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    const res = calculateBill(bill);
+    expect(res.subtotalPaise).toBe(66600);
+    expect(res.taxesTotalPaise).toBe(3330);
+    expect(res.effectiveBillTotalPaise).toBe(69930);
+    expect(res.calculatedPersonsTotalPaise).toBe(69930);
+    expect(res.isBalanced).toBe(true);
+    expect(res.roundingDifferencePaise).toBe(0);
+
+    const sumTotals = res.personShares.reduce((sum, p) => sum + p.totalPaise, 0);
+    expect(sumTotals).toBe(69930);
+  });
 });

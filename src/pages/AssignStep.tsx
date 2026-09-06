@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Users, Percent, DollarSign, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import { Check, Users, Percent, DollarSign, ArrowRight, AlertCircle, Sparkles, PieChart, Scissors, Minus, Plus } from 'lucide-react';
 import { BillItem, Person, SplitMode, CurrencyCode } from '../types';
 import { formatMoney, fromPaise, toPaise } from '../utils/currency';
 
@@ -31,10 +31,15 @@ export const AssignStep: React.FC<AssignStepProps> = ({
       newAssigned = [...item.assignedPersonIds, personId];
     }
 
-    // Default mode is equal split
+    const currentMode = item.assignments?.[0]?.mode || 'equal';
+
     const newAssignments = newAssigned.map(pid => {
       const existing = item.assignments?.find(a => a.personId === pid);
-      return existing || { personId: pid, mode: 'equal' as SplitMode };
+      if (existing) return existing;
+      if (currentMode === 'shares') {
+        return { personId: pid, mode: 'shares' as SplitMode, value: 1 };
+      }
+      return { personId: pid, mode: currentMode as SplitMode };
     });
 
     const updated = items.map(it => {
@@ -51,7 +56,35 @@ export const AssignStep: React.FC<AssignStepProps> = ({
     onUpdateItems(updated);
   };
 
-  // Set split mode for an item (equal, percentage, amount)
+  // Split an item with quantity > 1 into individual items of quantity 1
+  const handleSplitItem = (itemToSplit: BillItem) => {
+    if (itemToSplit.quantity <= 1) return;
+    const count = Math.floor(itemToSplit.quantity);
+    const unitPrice = itemToSplit.unitPricePaise;
+    const baseName = itemToSplit.name.replace(/\s*x\s*\d+$/i, '').trim();
+
+    const newItems: BillItem[] = Array.from({ length: count }, (_, i) => ({
+      id: `item-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 5)}`,
+      name: `${baseName} #${i + 1}`,
+      quantity: 1,
+      unitPricePaise: unitPrice,
+      totalPricePaise: unitPrice,
+      assignedPersonIds: [],
+      assignments: [],
+    }));
+
+    const itemIndex = items.findIndex(it => it.id === itemToSplit.id);
+    if (itemIndex === -1) return;
+
+    const updated = [
+      ...items.slice(0, itemIndex),
+      ...newItems,
+      ...items.slice(itemIndex + 1),
+    ];
+    onUpdateItems(updated);
+  };
+
+  // Set split mode for an item (equal, shares, percentage, amount)
   const handleSetSplitMode = (item: BillItem, mode: SplitMode) => {
     const count = item.assignedPersonIds.length;
     if (count === 0) return;
@@ -63,6 +96,16 @@ export const AssignStep: React.FC<AssignStepProps> = ({
         personId: pid,
         mode: 'equal',
       }));
+    } else if (mode === 'shares') {
+      // Initialize 1 portion each by default
+      newAssignments = item.assignedPersonIds.map(pid => {
+        const existing = item.assignments?.find(a => a.personId === pid);
+        return {
+          personId: pid,
+          mode: 'shares',
+          value: existing?.mode === 'shares' && existing.value ? existing.value : 1,
+        };
+      });
     } else if (mode === 'percentage') {
       // Initialize equal percentages summing to 100
       const defaultPct = Math.floor(100 / count);
@@ -173,7 +216,7 @@ export const AssignStep: React.FC<AssignStepProps> = ({
           const assignedCount = item.assignedPersonIds.length;
           const currentMode = item.assignments?.[0]?.mode || 'equal';
 
-          // Check custom validation if percentage or amount mode
+          // Check custom validation if percentage, amount, or shares mode
           let validationError: string | null = null;
           if (assignedCount > 1) {
             if (currentMode === 'percentage') {
@@ -185,6 +228,11 @@ export const AssignStep: React.FC<AssignStepProps> = ({
               const totalAmtPaise = item.assignments?.reduce((sum, a) => sum + (a.value || 0), 0) || 0;
               if (totalAmtPaise !== item.totalPricePaise) {
                 validationError = `Amounts sum to ${formatMoney(totalAmtPaise, currency)}, must equal ${formatMoney(item.totalPricePaise, currency)}`;
+              }
+            } else if (currentMode === 'shares') {
+              const totalShares = item.assignments?.reduce((sum, a) => sum + (a.value || 0), 0) || 0;
+              if (totalShares <= 0) {
+                validationError = `Total portions must be greater than 0`;
               }
             }
           }
@@ -215,6 +263,17 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                     {formatMoney(item.unitPricePaise, currency)}
                     {item.quantity > 1 && ` • ${item.quantity}x`}
                   </p>
+                  {item.quantity > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleSplitItem(item)}
+                      className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-bold transition-all shadow-2xs border border-black/5 dark:border-white/5"
+                      title={`Split ${item.name} into ${item.quantity} individual single items`}
+                    >
+                      <Scissors className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+                      <span>Split into {item.quantity} items</span>
+                    </button>
+                  )}
                 </div>
 
                 <div className="text-right">
@@ -225,6 +284,8 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                     <span className="block text-[11px] font-medium text-brand-600 dark:text-brand-400">
                       {currentMode === 'equal'
                         ? `~${formatMoney(Math.round(item.totalPricePaise / assignedCount), currency)} each`
+                        : currentMode === 'shares'
+                        ? 'PORTIONS'
                         : currentMode.toUpperCase()}
                     </span>
                   )}
@@ -269,11 +330,11 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                       Split Mode:
                     </span>
 
-                    <div className="flex items-center p-0.5 bg-slate-100 dark:bg-[#1c1c1e] rounded-xl">
+                    <div className="flex items-center p-0.5 bg-slate-100 dark:bg-[#1c1c1e] rounded-xl overflow-x-auto">
                       <button
                         type="button"
                         onClick={() => handleSetSplitMode(item, 'equal')}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 ${
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 shrink-0 ${
                           currentMode === 'equal'
                             ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-white shadow-sm'
                             : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -285,8 +346,21 @@ export const AssignStep: React.FC<AssignStepProps> = ({
 
                       <button
                         type="button"
+                        onClick={() => handleSetSplitMode(item, 'shares')}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 shrink-0 ${
+                          currentMode === 'shares'
+                            ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-white shadow-sm'
+                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <PieChart className="w-3 h-3" />
+                        <span>Portions</span>
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => handleSetSplitMode(item, 'percentage')}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 ${
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 shrink-0 ${
                           currentMode === 'percentage'
                             ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-white shadow-sm'
                             : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -299,7 +373,7 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                       <button
                         type="button"
                         onClick={() => handleSetSplitMode(item, 'amount')}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 ${
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 shrink-0 ${
                           currentMode === 'amount'
                             ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-white shadow-sm'
                             : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -311,8 +385,130 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                     </div>
                   </div>
 
+                  {/* Configuration inputs if Portions mode */}
+                  {currentMode === 'shares' && (
+                    <div className="mt-2.5 p-3.5 rounded-[22px] bg-slate-50 dark:bg-[#1c1c1e]/80 space-y-2.5">
+                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 pb-1 border-b border-black/5 dark:border-white/5">
+                        <span>Portion per person:</span>
+                        <span className="text-brand-600 dark:text-brand-400 font-extrabold">
+                          {(() => {
+                            const totalPortions = item.assignments?.reduce((sum, a) => sum + (a.value || 0), 0) || 0;
+                            return `${totalPortions} / ${item.quantity} portion${item.quantity > 1 ? 's' : ''}`;
+                          })()}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2">
+                        {item.assignedPersonIds.map(pid => {
+                          const person = people.find(p => p.id === pid);
+                          if (!person) return null;
+                          const asgn = item.assignments?.find(a => a.personId === pid);
+                          const currentVal = asgn?.value !== undefined ? asgn.value : 1;
+
+                          return (
+                            <div
+                              key={pid}
+                              className="flex items-center justify-between bg-white dark:bg-slate-800/90 p-2.5 rounded-[16px] shadow-2xs border border-black/5 dark:border-white/5"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">{person.avatar}</span>
+                                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                                  {person.name}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-1.5">
+                                {/* Quick 0.5 chip */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateAssignmentValue(item.id, pid, 0.5)}
+                                  className={`px-2 py-1 rounded-lg text-[10px] font-black transition-all ${
+                                    currentVal === 0.5
+                                      ? 'bg-brand-600 text-white shadow-xs'
+                                      : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                  }`}
+                                  title="Half portion (0.5)"
+                                >
+                                  ½
+                                </button>
+
+                                {/* Quick 1 chip */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateAssignmentValue(item.id, pid, 1)}
+                                  className={`px-2 py-1 rounded-lg text-[10px] font-black transition-all ${
+                                    currentVal === 1
+                                      ? 'bg-brand-600 text-white shadow-xs'
+                                      : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                  }`}
+                                  title="1 full portion (1.0)"
+                                >
+                                  1
+                                </button>
+
+                                {/* Stepper [-] */}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleUpdateAssignmentValue(
+                                      item.id,
+                                      pid,
+                                      Math.max(0.5, Math.round((currentVal - 0.5) * 10) / 10)
+                                    )
+                                  }
+                                  className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center text-slate-700 dark:text-slate-200 active:scale-95 transition-transform"
+                                  title="Decrease portion by 0.5"
+                                >
+                                  <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
+                                </button>
+
+                                {/* Manual number input */}
+                                <input
+                                  type="number"
+                                  step="0.5"
+                                  min="0.1"
+                                  value={currentVal}
+                                  onChange={e =>
+                                    handleUpdateAssignmentValue(
+                                      item.id,
+                                      pid,
+                                      Math.max(0, parseFloat(e.target.value) || 0)
+                                    )
+                                  }
+                                  className="w-12 py-1 text-center font-black text-xs bg-slate-50 dark:bg-slate-900/80 rounded-lg border border-black/5 dark:border-white/5 outline-none focus:ring-1 focus:ring-brand-500"
+                                />
+
+                                {/* Stepper [+] */}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleUpdateAssignmentValue(
+                                      item.id,
+                                      pid,
+                                      Math.round((currentVal + 0.5) * 10) / 10
+                                    )
+                                  }
+                                  className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center text-slate-700 dark:text-slate-200 active:scale-95 transition-transform"
+                                  title="Increase portion by 0.5"
+                                >
+                                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {validationError && (
+                        <p className="text-[11px] font-bold text-rose-500 pt-1">
+                          ⚠️ {validationError}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Advanced Configuration inputs if Percentage or Custom Amount */}
-                  {currentMode !== 'equal' && (
+                  {(currentMode === 'percentage' || currentMode === 'amount') && (
                     <div className="mt-2.5 p-3 rounded-[20px] bg-slate-50 dark:bg-[#1c1c1e]/80 space-y-2">
                       {item.assignedPersonIds.map(pid => {
                         const person = people.find(p => p.id === pid);

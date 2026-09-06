@@ -64,6 +64,33 @@ function calculateItemAssignments(
         details: `${weights[idx]}% share`,
       });
     });
+  } else if (mode === 'shares') {
+    // Split by portions / shares (e.g. 0.5, 1, 1.5, 2)
+    const weights = validPersonIds.map(pid => {
+      const asgn = assignments?.find(a => a.personId === pid);
+      return asgn?.value !== undefined && asgn.value > 0 ? asgn.value : 0;
+    });
+
+    const totalShares = weights.reduce((sum, w) => sum + w, 0);
+    const effectiveWeights = totalShares > 0 ? weights : new Array(validPersonIds.length).fill(1);
+    const divisor = totalShares > 0 ? totalShares : validPersonIds.length;
+
+    const shares = distributeIntegerPaise(totalPricePaise, effectiveWeights, validPersonIds);
+
+    validPersonIds.forEach((pid, idx) => {
+      const share = shares[idx];
+      const person = personMap.get(pid)!;
+      person.itemsSharePaise += share;
+      const portionCount = totalShares > 0 ? weights[idx] : 1;
+      person.assignedItems.push({
+        itemId: id,
+        itemName: name,
+        quantity,
+        mode: 'shares',
+        sharePaise: share,
+        details: `${portionCount} of ${divisor} portion${divisor === 1 ? '' : 's'}`,
+      });
+    });
   } else if (mode === 'amount') {
     // Custom amounts in paise
     validPersonIds.forEach(pid => {
