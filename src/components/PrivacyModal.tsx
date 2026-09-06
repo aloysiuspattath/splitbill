@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, ShieldCheck, Lock, HardDrive, WifiOff, RefreshCw } from 'lucide-react';
+import { forceClearCacheAndReload } from '../utils/cacheManager';
 
 interface PrivacyModalProps {
   isOpen: boolean;
@@ -73,12 +74,22 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
           </div>
         </div>
 
-        <button
-          onClick={onClose}
-          className="w-full py-3 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20"
-        >
-          Got It, Thanks!
-        </button>
+        <div className="flex flex-col gap-2 pt-1">
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20"
+          >
+            Got It, Thanks!
+          </button>
+          <button
+            onClick={() => forceClearCacheAndReload()}
+            className="w-full py-2.5 rounded-[16px] bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            title="Clear all Service Workers & CacheStorage to load the newest build"
+          >
+            <RefreshCw className="w-3 h-3 text-amber-500" />
+            <span>Force Clear Cache & Reload Latest App</span>
+          </button>
+        </div>
       </div>
     </div>
   );

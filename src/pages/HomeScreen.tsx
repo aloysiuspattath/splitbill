@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, Upload, PenLine, History, Sparkles, Shield, ArrowRight, Zap } from 'lucide-react';
+import { Camera, Upload, PenLine, History, Sparkles, Shield, ArrowRight, Zap, RotateCcw } from 'lucide-react';
+import { forceClearCacheAndReload } from '../utils/cacheManager';
 
 interface HomeScreenProps {
   onStartManual: () => void;
@@ -245,6 +246,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
           Free • Private • No signup • 100% Offline Capable
         </p>
+        <button
+          onClick={() => forceClearCacheAndReload()}
+          className="mt-1 text-[10px] text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1 transition-colors opacity-70 hover:opacity-100"
+          title="Clear local browser cache and reload latest version"
+        >
+          <RotateCcw className="w-2.5 h-2.5" />
+          <span>Check for updates / Clear cache</span>
+        </button>
       </div>
     </div>
   );
