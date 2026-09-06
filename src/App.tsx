@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Bill, CalculatedBillResult } from './types';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { StepIndicator } from './components/StepIndicator';
 import { HomeScreen } from './pages/HomeScreen';
 import { OcrLoadingModal } from './components/OcrLoadingModal';
@@ -332,6 +333,9 @@ export function App() {
           )}
         </Suspense>
       </main>
+
+      {/* App Footer */}
+      <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
 
       {/* OCR Progress Modal */}
       {isOcrLoading && (

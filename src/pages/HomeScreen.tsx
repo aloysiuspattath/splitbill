@@ -120,6 +120,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         accept="image/*"
         capture="environment"
         onChange={handleFileChange}
+        aria-label="Capture receipt with camera"
         className="hidden"
       />
 
@@ -129,6 +130,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         type="file"
         accept="image/*"
         onChange={handleFileChange}
+        aria-label="Choose receipt image file"
         className="hidden"
       />
 
@@ -177,7 +179,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         Easily
       </h1>
 
-      <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xs mb-8">
+      <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-xs mb-8 font-medium">
         Split a restaurant bill with your friends in seconds.
         Snap a receipt or enter items manually.
       </p>
@@ -187,6 +189,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* Scan with Camera Button */}
         <button
           onClick={() => cameraInputRef.current?.click()}
+          aria-label="Scan receipt with camera"
           className="w-full py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-bold text-base shadow-[0_8px_16px_rgb(37,99,235,0.25)] flex items-center justify-center gap-3 active:scale-95 transition-all duration-300"
         >
           <Camera className="w-5 h-5" />
@@ -197,6 +200,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* Upload Bill Image Button */}
         <button
           onClick={() => uploadInputRef.current?.click()}
+          aria-label="Upload bill image from files"
           className="w-full py-4 px-6 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-800 dark:text-slate-100 font-bold text-base shadow-[0_2px_8px_rgb(0,0,0,0.08)] flex items-center justify-center gap-3 active:scale-95 transition-all duration-300 border border-black/5 dark:border-transparent hover:bg-slate-50 dark:hover:bg-[#2c2c2e]"
         >
           <Upload className="w-5 h-5 text-brand-600 dark:text-brand-400" />
@@ -205,13 +209,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </button>
 
         {/* Drag & Drop / Paste Hint */}
-        <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 py-0.5">
+        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 py-0.5">
           ✨ Or drag & drop / paste (<kbd className="px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-[10px] font-mono">Ctrl+V</kbd>) receipt images directly
         </p>
 
         {/* Enter Bill Manually Button */}
         <button
           onClick={onStartManual}
+          aria-label="Enter bill manually"
           className="w-full py-3.5 px-6 rounded-[20px] bg-slate-100/80 dark:bg-[#2c2c2e] text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-[#3c3c3e] flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
         >
           <PenLine className="w-4 h-4 text-slate-500 dark:text-slate-400" />
@@ -221,6 +226,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* Try Demo Button */}
         <button
           onClick={onLoadDemo}
+          aria-label="Try demo bill: Sulthan Veedu Restaurant"
           className="w-full py-2.5 px-4 rounded-xl bg-brand-50 dark:bg-brand-950/50 hover:bg-brand-100 dark:hover:bg-brand-900/60 text-brand-700 dark:text-brand-300 font-semibold text-xs border border-brand-200/60 dark:border-brand-800/60 flex items-center justify-center gap-1.5 transition-all"
         >
           <Sparkles className="w-3.5 h-3.5" />
@@ -231,6 +237,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* Secondary: Recent Bills */}
       <button
         onClick={onOpenRecent}
+        aria-label="View recent saved bills"
         className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 mb-8 transition-colors"
       >
         <History className="w-4 h-4" />
@@ -243,12 +250,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <Shield className="w-3.5 h-3.5 text-emerald-500" />
           <span>🔒 Your bills stay on this device. No account required.</span>
         </div>
-        <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
           Free • Private • No signup • 100% Offline Capable
         </p>
         <button
           onClick={() => forceClearCacheAndReload()}
-          className="mt-1 text-[10px] text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1 transition-colors opacity-70 hover:opacity-100"
+          aria-label="Check for updates or clear local cache"
+          className="mt-1 text-[10px] text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1 transition-colors opacity-80 hover:opacity-100"
           title="Clear local browser cache and reload latest version"
         >
           <RotateCcw className="w-2.5 h-2.5" />

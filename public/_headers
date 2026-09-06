@@ -72,3 +72,20 @@
   Content-Type: image/svg+xml
   Cache-Control: public, max-age=604800
   Access-Control-Allow-Origin: *
+
+/favicon.ico
+  Content-Type: image/x-icon
+  Cache-Control: public, max-age=604800
+
+/apple-touch-icon.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=604800
+
+/pwa-192x192.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=604800
+
+/pwa-512x512.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=604800
+

@@ -33,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onGoHome}
           className="flex items-center gap-2 focus:outline-none flex-shrink-0 group"
           title="Go to Home"
+          aria-label="SplitBill Home"
         >
           <div className="w-9 h-9 rounded-[14px] bg-brand-600 text-white flex items-center justify-center shadow-md shadow-brand-500/25 group-hover:scale-105 transition-transform flex-shrink-0">
             <Receipt className="w-4 h-4 stroke-[2.5]" />
@@ -52,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
               onChange={e => onCurrencyChange(e.target.value as CurrencyCode)}
               className="text-[11px] font-bold bg-transparent text-slate-700 dark:text-slate-200 border-none outline-none cursor-pointer appearance-none pr-4"
               title="Select Currency"
+              aria-label="Select Currency"
             >
               {Object.values(CURRENCIES).map(curr => (
                 <option key={curr.code} value={curr.code} className="bg-white dark:bg-[#1c1c1e]">
@@ -70,6 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onOpenRecent}
             className="relative p-2 rounded-[14px] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1c1c1e] transition-colors focus:outline-none flex-shrink-0"
             title="Recent Bills"
+            aria-label="Recent Bills"
           >
             <History className="w-4 h-4 sm:w-5 sm:h-5" />
             {savedBillsCount > 0 && (
@@ -82,6 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onOpenPrivacy}
             className="p-2 rounded-[14px] text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors focus:outline-none flex-shrink-0"
             title="Privacy & Storage Policy"
+            aria-label="Privacy and Storage Information"
           >
             <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -91,6 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onToggleDark}
             className="p-2 rounded-[14px] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1c1c1e] transition-colors focus:outline-none flex-shrink-0"
             title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
             {isDark ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
