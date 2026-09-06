@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" fill="none">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+
+    <!-- Accent glow -->
+    <radialGradient id="glow" cx="80%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#1e3a8a" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="glow2" cx="20%" cy="90%" r="50%">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Card Shadow Filter -->
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="24" stdDeviation="30" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#2563eb" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1200" height="630" fill="url(#bgGradient)" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+  <rect width="1200" height="630" fill="url(#glow2)" />
+
+  <!-- Subtle Grid Pattern -->
+  <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="90" x2="1200" y2="90" />
+    <line x1="0" y1="180" x2="1200" y2="180" />
+    <line x1="0" y1="270" x2="1200" y2="270" />
+    <line x1="0" y1="360" x2="1200" y2="360" />
+    <line x1="0" y1="450" x2="1200" y2="450" />
+    <line x1="0" y1="540" x2="1200" y2="540" />
+    <line x1="150" y1="0" x2="150" y2="630" />
+    <line x1="300" y1="0" x2="300" y2="630" />
+    <line x1="450" y1="0" x2="450" y2="630" />
+    <line x1="600" y1="0" x2="600" y2="630" />
+    <line x1="750" y1="0" x2="750" y2="630" />
+    <line x1="900" y1="0" x2="900" y2="630" />
+    <line x1="1050" y1="0" x2="1050" y2="630" />
+  </g>
+
+  <!-- Left Content Column -->
+  <!-- Top Category Pill -->
+  <g transform="translate(80, 75)">
+    <rect width="210" height="40" rx="20" fill="#ffffff" fill-opacity="0.12" stroke="#ffffff" stroke-opacity="0.25" stroke-width="1.5" />
+    <circle cx="24" cy="20" r="6" fill="#10b981" />
+    <text x="38" y="25" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="800" fill="#ffffff" letter-spacing="1.5">100% PRIVATE &amp; FREE</text>
+  </g>
+
+  <!-- Brand Title -->
+  <text x="80" y="195" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="900" fill="#ffffff" letter-spacing="-1.5">
+    Split<tspan fill="#60a5fa">Bill</tspan>
+  </text>
+
+  <!-- Subheadline -->
+  <text x="80" y="260" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="800" fill="#f1f5f9" letter-spacing="-0.5">
+    Split Restaurant Bills Instantly.
+  </text>
+  <text x="80" y="305" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="500" fill="#cbd5e1">
+    No signup required • Zero math headaches • 1-Paisa Precision
+  </text>
+
+  <!-- Feature Value Pills -->
+  <g transform="translate(80, 355)">
+    <!-- Pill 1: OCR Receipt Scanner -->
+    <g transform="translate(0, 0)">
+      <rect width="185" height="44" rx="14" fill="#ffffff" fill-opacity="0.15" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1.2" />
+      <text x="20" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="700" fill="#ffffff">📸 OCR Scanner</text>
+    </g>
+
+    <!-- Pill 2: Portion Splitting -->
+    <g transform="translate(197, 0)">
+      <rect width="200" height="44" rx="14" fill="#ffffff" fill-opacity="0.15" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1.2" />
+      <text x="20" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="700" fill="#ffffff">🍕 Portion Splitting</text>
+    </g>
+
+    <!-- Pill 3: Tax & Discount Engine -->
+    <g transform="translate(0, 56)">
+      <rect width="230" height="44" rx="14" fill="#ffffff" fill-opacity="0.15" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1.2" />
+      <text x="20" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="700" fill="#ffffff">⚖️ Exact Tax Allocation</text>
+    </g>
+
+    <!-- Pill 4: Offline Ready -->
+    <g transform="translate(242, 56)">
+      <rect width="155" height="44" rx="14" fill="#ffffff" fill-opacity="0.15" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1.2" />
+      <text x="20" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="700" fill="#ffffff">⚡ Works Offline</text>
+    </g>
+  </g>
+
+  <!-- Bottom TechFliq Watermark / URL -->
+  <g transform="translate(80, 545)">
+    <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="700" fill="#93c5fd" letter-spacing="0.5">
+      splitbill.techfliq.com
+    </text>
+    <text x="220" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="500" fill="#64748b">
+      • Built by TechFliq
+    </text>
+  </g>
+
+  <!-- Right Visual: Floating Receipt Mockup Card -->
+  <g transform="translate(740, 75)" filter="url(#cardShadow)">
+    <!-- White Paper Receipt Card -->
+    <rect width="380" height="480" rx="28" fill="#ffffff" />
+
+    <!-- Jagged edge simulation on top header -->
+    <rect x="0" y="0" width="380" height="12" rx="6" fill="#2563eb" />
+
+    <!-- Receipt Header -->
+    <g transform="translate(30, 40)">
+      <circle cx="28" cy="28" r="24" fill="#eff6ff" />
+      <text x="18" y="36" font-size="22">🧾</text>
+      <text x="64" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="19" font-weight="800" fill="#0f172a">Curry House &amp; Grill</text>
+      <text x="64" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="600" fill="#64748b">Receipt Split • 3 People</text>
+    </g>
+
+    <!-- Dashed separator -->
+    <line x1="30" y1="110" x2="350" y2="110" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="6 6" />
+
+    <!-- Bill Item Rows -->
+    <g transform="translate(30, 135)">
+      <!-- Item 1 -->
+      <g transform="translate(0, 0)">
+        <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#1e293b">Beef Curry (x2)</text>
+        <text x="0" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600" fill="#2563eb">Split by portions (0.5 + 0.5 + 1.0)</text>
+        <text x="320" y="8" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="800" fill="#0f172a">₹700.00</text>
+      </g>
+
+      <!-- Item 2 -->
+      <g transform="translate(0, 42)">
+        <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#1e293b">Butter Naan (x4)</text>
+        <text x="0" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600" fill="#64748b">Split equally among 3</text>
+        <text x="320" y="8" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="800" fill="#0f172a">₹240.00</text>
+      </g>
+
+      <!-- Item 3 -->
+      <g transform="translate(0, 84)">
+        <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#1e293b">Mango Lassi</text>
+        <text x="0" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600" fill="#64748b">Boy A only</text>
+        <text x="320" y="8" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="800" fill="#0f172a">₹120.00</text>
+      </g>
+    </g>
+
+    <!-- Solid separator -->
+    <line x1="30" y1="280" x2="350" y2="280" stroke="#e2e8f0" stroke-width="1.5" />
+
+    <!-- Person Shares Breakdown Cards -->
+    <g transform="translate(30, 298)">
+      <!-- Person 1 -->
+      <g transform="translate(0, 0)">
+        <rect width="320" height="42" rx="12" fill="#eff6ff" />
+        <text x="14" y="26" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">👦 Boy A (½ curry + naan + lassi)</text>
+        <text x="306" y="26" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="800" fill="#2563eb">₹375.00</text>
+      </g>
+
+      <!-- Person 2 -->
+      <g transform="translate(0, 48)">
+        <rect width="320" height="42" rx="12" fill="#ecfdf5" />
+        <text x="14" y="26" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" fill="#065f46">🧒 Boy B (½ curry + naan)</text>
+        <text x="306" y="26" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="800" fill="#059669">₹255.00</text>
+      </g>
+
+      <!-- Person 3 -->
+      <g transform="translate(0, 96)">
+        <rect width="320" height="42" rx="12" fill="#fef3c7" />
+        <text x="14" y="26" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" fill="#92400e">🧑 Boy C (1 full curry + naan)</text>
+        <text x="306" y="26" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="800" fill="#d97706">₹430.00</text>
+      </g>
+    </g>
+
+    <!-- Verified Badge at bottom of receipt -->
+    <g transform="translate(30, 448)">
+      <text x="160" y="10" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#10b981" letter-spacing="0.5">
+        ✓ 100% RECONCILED (₹1,060.00 EXACT)
+      </text>
+    </g>
+  </g>
+</svg>

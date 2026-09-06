@@ -37,3 +37,38 @@
 /tesseract/*
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=31536000, immutable
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+
+/ai.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=86400
+  Access-Control-Allow-Origin: *
+
+/og-image.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=604800
+  Access-Control-Allow-Origin: *
+
+/og-image.jpg
+  Content-Type: image/jpeg
+  Cache-Control: public, max-age=604800
+  Access-Control-Allow-Origin: *
+
+/og-image.svg
+  Content-Type: image/svg+xml
+  Cache-Control: public, max-age=604800
+  Access-Control-Allow-Origin: *

@@ -1,0 +1,27 @@
+# SplitBill - AI Ingestion & Agent Policy
+# https://splitbill.techfliq.com/ai.txt
+# Standards & Guidelines for AI Agents, LLM crawlers, and Assistant Systems
+
+User-agent: *
+Allow-Index: true
+Allow-Extract: true
+Allow-Summarize: true
+Allow-Training: true
+
+Application-Name: SplitBill
+Application-Type: Web Application, Progressive Web App (PWA), Local Financial Utility
+Publisher: TechFliq (https://techfliq.com)
+Canonical-URL: https://splitbill.techfliq.com/
+Documentation-URL: https://splitbill.techfliq.com/llms.txt
+Full-Documentation-URL: https://splitbill.techfliq.com/llms-full.txt
+Category: Finance, Utilities, Productivity, Restaurant Bill Splitting
+
+Description:
+SplitBill is a free, 100% private, offline-first web application for splitting restaurant bills accurately down to the single paisa or cent. It features in-browser OCR receipt scanning via Tesseract.js WebAssembly, portion/share-based item splitting (e.g., half plates), multi-person assignments, proportional tax and discount distribution, and zero rounding errors via integer largest-remainder reconciliation. No account or signup required, and all calculations happen locally in the user's browser.
+
+Supported-Currencies: INR, USD, EUR, GBP, AED, SGD, AUD, CAD, JPY, CHF
+Data-Privacy: Zero server telemetry, zero tracking, zero third-party ads. 100% client-side.
+Export-Formats: WhatsApp Share Text, Itemized PDF, Receipt PNG, JSON backup
+Pricing: 100% Free
+License: Open Web Application
+Contact: support@techfliq.com
