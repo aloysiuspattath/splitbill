@@ -14,22 +14,26 @@ export interface ParsedReceiptData {
 // Common metadata and noise patterns that can never be bill items
 const METADATA_PATTERNS = [
   /\b(date|time|dina?\s*in|table|token|waiter|captain|server|cashier|bill\s*no|order\s*no|order\s*#|gstin|fssai|tel|ph|phone|email|www\.|welcome|thank\s*you|visit\s*again)\b/i,
-  /\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}\b/, // dates like 04/09/26
-  /\b\d{1,2}:\d{2}(:\d{2})?\b/, // times like 21:30
+  /\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/, // dates like 04/09/26 or 31-08-2026
+  /\b\d{1,2}:\d{2}(:\d{2})?\s*(am|pm)?\b/i, // times like 21:30 or 08:48 PM
+  /\b\d{1,2}\.\d{2}\s*(am|pm)\b/i, // times with dot like 08.48 PM
   /\bph[:\s]*\d+/i, // phone numbers
-  /\bbill\s*no\b/i,
+  /\b\d{10}\b/, // standalone 10-digit phone numbers like 9633624533
+  /\b(bill|frill|biil)\s*n[o0]\b/i,
   /\border\s*no\b/i,
   /\bcashier\b/i,
   /\bdina?\s*in\b/i,
   /\bgstin\b/i,
   /\bfssai\b/i,
   /\bpillar\b/i,
-  /\b(item|qty|price|amount|rate|particulars|description)\b/i,
-  /qty\.\s*price/i,
+  /\b(ctr|staff)\b/i,
+  /\b(item|particulars|description)\b.*\b(qty|rate|price|amount)\b/i,
+  /qty\.\s*(price|amount|rate)/i,
   /^[=\-_*#—~]{2,}$/, // divider lines
   /^(cash|card|upi|paytm|gpay|visa|mastercard)/i,
   /^(consume\s*packed|thumhari|hamara|qr\s*code)/i,
   /^total\s*qty/i,
+  /#\s*\d+\s*item/i,
 ];
 
 function isMetadataOrHeaderLine(line: string): boolean {
@@ -38,38 +42,42 @@ function isMetadataOrHeaderLine(line: string): boolean {
 
 /**
  * Detects the restaurant name from the top header lines,
- * ignoring stray OCR noise like "ban '" or addresses.
+ * ignoring stray OCR noise like "ban '", "x Tr BILL", or addresses.
  */
 function detectRestaurantName(lines: string[]): string {
   // First priority: lines with known restaurant keywords
   for (let i = 0; i < Math.min(8, lines.length); i++) {
     const l = lines[i];
+    if (/if\s*thar/i.test(l)) {
+      return 'IFTHAR';
+    }
     if (/sulthan|veedu|restaurant|hotel|cafe|kitchen|bakes|diner/i.test(l)) {
       if (/sulthan|veedu|lthan\s*ve/i.test(l)) {
         return 'Sulthan Veedu Restaurant';
       }
-      return l.replace(/[\d.,₹$€£#*~_]+/g, '').trim();
+      return l.replace(/[\d.,₹$€£#*~_\\/]+/g, '').trim();
     }
   }
 
-  // Second priority: first clean title line with >= 4 chars
-  for (let i = 0; i < Math.min(5, lines.length); i++) {
+  // Second priority: first clean title line with >= 4 chars, skipping generic words like "BILL"
+  for (let i = 0; i < Math.min(6, lines.length); i++) {
     const l = lines[i].trim();
     if (
       l.length >= 4 &&
       !isMetadataOrHeaderLine(l) &&
       !/\d{4,}/.test(l) &&
+      !/^(bill|tax\s*invoice|invoice|receipt|cash\s*memo)$/i.test(l) &&
       !/companypady|aluva|kerala|road|street|pillar/i.test(l)
     ) {
-      const clean = l.replace(/[\d.,₹$€£#*~_]+/g, '').trim();
-      // Ignore lowercase noise words like "ban '"
-      if (clean.length >= 4 && !/^[a-z\s']+$/.test(clean)) {
+      const clean = l.replace(/[\d.,₹$€£#*~_\\/]+/g, '').trim();
+      // Ignore lowercase noise words like "ban '" or "x Tr BILL"
+      if (clean.length >= 4 && !/^[a-z\s']+$/.test(clean) && !/\bbill\b/i.test(clean)) {
         return clean;
       }
     }
   }
 
-  return 'Sulthan Veedu Restaurant';
+  return 'Restaurant Bill';
 }
 
 /**
@@ -228,9 +236,11 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
 
 function cleanItemName(name: string): string {
   return name
+    .replace(/^[a-z0-9]{1,2}\s+(?=[A-Za-z])/i, '') // strip leading 1-2 char stray OCR debris like "L ", "vf ", "x "
     .replace(/[—\-_*#=~|]+.*$/g, '')
     .replace(/\b(of\s*v|ox\s*l|up\d+|at\s*k\s*\(?|f\s*ba|:\s*a)\b.*$/i, '')
     .replace(/\s+[a-zA-Z0-9:()\[\]]{1,2}$/, '') // strip trailing orphan characters
+    .replace(/_/g, ' ') // replace underscore (e.g. CKN_NADAN -> CKN NADAN)
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
@@ -247,7 +257,8 @@ function extractNumbersFromLine(str: string): number[] {
     const clean = token.replace(/[^0-9.]/g, '');
     if (clean && !isNaN(parseFloat(clean))) {
       const val = parseFloat(clean);
-      if (val > 0 && val < 100000) {
+      // Food prices are never >= 50,000 (blocks phone numbers, bill numbers, barcodes)
+      if (val > 0 && val < 50000) {
         nums.push(val);
       }
     }
@@ -291,7 +302,8 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
     const rawTok = tokens[idx];
     const cleanedTok = rawTok.replace(/[€₹$£]/g, '').replace(/¢/g, '0');
     const numVal = parseFloat(cleanedTok.replace(/[^0-9.]/g, ''));
-    if (!isNaN(numVal) && /^[\d.,cC¢]+$/.test(rawTok.replace(/[()]/g, ''))) {
+    // Enforce valid food price bounds (< 50,000) to discard phone numbers or barcodes
+    if (!isNaN(numVal) && numVal > 0 && numVal < 50000 && /^[\d.,cC¢]+$/.test(rawTok.replace(/[()]/g, ''))) {
       numMatches.push({ index: idx, val: numVal });
       if (firstNumIdx === -1) firstNumIdx = idx;
     }
