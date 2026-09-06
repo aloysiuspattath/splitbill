@@ -13,11 +13,12 @@ export interface ParsedReceiptData {
 
 // Common metadata and noise patterns that can never be bill items
 const METADATA_PATTERNS = [
-  /\b(date|time|dina?\s*in|table|token|waiter|captain|server|cashier|bill\s*no|gstin|fssai|tel|ph|phone|email|www\.|welcome|thank\s*you|visit\s*again)\b/i,
+  /\b(date|time|dina?\s*in|table|token|waiter|captain|server|cashier|bill\s*no|order\s*no|order\s*#|gstin|fssai|tel|ph|phone|email|www\.|welcome|thank\s*you|visit\s*again)\b/i,
   /\b\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}\b/, // dates like 04/09/26
   /\b\d{1,2}:\d{2}(:\d{2})?\b/, // times like 21:30
   /\bph[:\s]*\d+/i, // phone numbers
   /\bbill\s*no\b/i,
+  /\border\s*no\b/i,
   /\bcashier\b/i,
   /\bdina?\s*in\b/i,
   /\bgstin\b/i,
@@ -120,8 +121,8 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
       continue;
     }
 
-    // Check for Grand Total line
-    if (/\b(grand\s*total|net\s*amount|total\s*due)\b/i.test(line) && !/total\s*qty/i.test(line)) {
+    // Check for Grand Total (e.g. "TOTAL PAYABLE : 719.00", "Grand Total 1720.00", "Net Amount", "Total Due")
+    if (/\b(total\s*payable|grand\s*total|net\s*amount|total\s*due)\b/i.test(line)) {
       const numbers = extractNumbersFromLine(line);
       if (numbers.length > 0) {
         detectedTotalPaise = toPaise(numbers[numbers.length - 1], currency);
@@ -129,11 +130,25 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
       continue;
     }
 
-    // Check for Subtotal line
-    if (/\b(sub\s*total|subtotal)\b/i.test(line) && !/total\s*qty/i.test(line)) {
+    // Check for Subtotal line (e.g. "Subtotal 684.61" or pre-tax "TOTAL : 13 684.61")
+    if (
+      (/\b(sub\s*total|subtotal)\b/i.test(line) || (/^total\s*[:\s]/i.test(line) && !detectedSubtotalPaise)) &&
+      !/total\s*qty|total\s*payable/i.test(line)
+    ) {
       const numbers = extractNumbersFromLine(line);
       if (numbers.length > 0) {
         detectedSubtotalPaise = toPaise(numbers[numbers.length - 1], currency);
+      }
+      continue;
+    }
+
+    // Fallback: Standalone Total (e.g. "Total 32.28")
+    if (/\btotal\b/i.test(line) && !/total\s*qty|sub\s*total|subtotal|total\s*payable/i.test(line)) {
+      const numbers = extractNumbersFromLine(line);
+      if (numbers.length > 0) {
+        if (!detectedTotalPaise) {
+          detectedTotalPaise = toPaise(numbers[numbers.length - 1], currency);
+        }
       }
       continue;
     }
@@ -241,7 +256,32 @@ function extractNumbersFromLine(str: string): number[] {
 }
 
 function tryParseSmartItem(line: string, currency: CurrencyCode, index: number): BillItem | null {
-  const tokens = line.trim().split(/\s+/);
+  let cleanedLine = line.trim();
+
+  // 1. Check & strip leading serial numbers: e.g. "1. Butter Chicken", "01) Naan", "[1] Rice"
+  const serialMatch = cleanedLine.match(/^(\d{1,3})[.)\]\s-]+\s+([a-zA-Z].+)$/);
+  if (serialMatch) {
+    cleanedLine = serialMatch[2].trim();
+  }
+
+  // 2. Check for leading quantity: e.g. "2x Burger", "2 * Fries", "1 Avocado Toast"
+  let leadingQty: number | undefined;
+
+  // Leading "2x " or "2 x "
+  const leadingXQtyMatch = cleanedLine.match(/^(\d{1,2})\s*(?:x|\*|@)\s+(.+)$/i);
+  if (leadingXQtyMatch) {
+    leadingQty = parseInt(leadingXQtyMatch[1], 10);
+    cleanedLine = leadingXQtyMatch[2].trim();
+  } else {
+    // Leading standalone number followed by words and a trailing price: e.g. "1 Avocado Toast 14.50"
+    const leadingNumMatch = cleanedLine.match(/^(\d{1,2})\s+([a-zA-Z].+?\s+\d+(?:[.,]\d{1,2})?.*)$/);
+    if (leadingNumMatch) {
+      leadingQty = parseInt(leadingNumMatch[1], 10);
+      cleanedLine = leadingNumMatch[2].trim();
+    }
+  }
+
+  const tokens = cleanedLine.split(/\s+/);
   if (tokens.length < 2) return null;
 
   let firstNumIdx = -1;
@@ -271,16 +311,23 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
 
   if (!name || name.length < 2) return null;
 
-  let quantity = 1;
+  let quantity = leadingQty || 1;
   let unitPrice = 0;
   let lineTotal = 0;
 
   const nums = numMatches.map(m => m.val);
 
   if (nums.length >= 3) {
-    // E.g. [2, 240.00, 480] or [1, 370.00, 37] or [2, 40.00, 80.00, 3]
+    // E.g. [2, 240.00, 480] or [1, 370.00, 37] or [17.15, 4, 68.60]
     // Check for exact arithmetic match: a * b = c
-    let matched = false;
+    interface MatchCandidate {
+      quantity: number;
+      unitPrice: number;
+      lineTotal: number;
+      isIntegerQty: boolean;
+    }
+    const candidates: MatchCandidate[] = [];
+
     for (let qIdx = 0; qIdx < nums.length; qIdx++) {
       for (let uIdx = 0; uIdx < nums.length; uIdx++) {
         if (qIdx === uIdx) continue;
@@ -291,20 +338,32 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
           for (let tIdx = 0; tIdx < nums.length; tIdx++) {
             if (tIdx === qIdx || tIdx === uIdx) continue;
             if (Math.abs(nums[tIdx] - expected) < 0.5) {
-              quantity = Math.round(q);
-              unitPrice = u;
-              lineTotal = expected;
-              matched = true;
-              break;
+              const isInt = Math.abs(q - Math.round(q)) < 0.05;
+              candidates.push({
+                quantity: Math.round(q),
+                unitPrice: u,
+                lineTotal: expected,
+                isIntegerQty: isInt,
+              });
             }
           }
         }
-        if (matched) break;
       }
-      if (matched) break;
     }
 
-    if (!matched) {
+    if (candidates.length > 0) {
+      // Prioritize candidates where quantity is an exact integer, then smallest quantity
+      candidates.sort((a, b) => {
+        if (a.isIntegerQty !== b.isIntegerQty) {
+          return a.isIntegerQty ? -1 : 1;
+        }
+        return a.quantity - b.quantity;
+      });
+
+      quantity = candidates[0].quantity;
+      unitPrice = candidates[0].unitPrice;
+      lineTotal = candidates[0].lineTotal;
+    } else {
       if (nums[0] >= 1 && nums[0] <= 50 && Number.isInteger(nums[0])) {
         quantity = nums[0];
         unitPrice = nums[1];
@@ -315,14 +374,10 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
       }
     }
   } else if (nums.length === 2) {
-    if (nums[0] >= 1 && nums[0] <= 50 && Number.isInteger(nums[0])) {
+    if (nums[0] >= 1 && nums[0] <= 50 && Number.isInteger(nums[0]) && !leadingQty) {
       quantity = nums[0];
       unitPrice = nums[1];
       lineTotal = Math.round(quantity * unitPrice * 100) / 100;
-    } else if (nums[1] > nums[0] && nums[1] % nums[0] === 0 && nums[1] / nums[0] <= 20) {
-      quantity = nums[1] / nums[0];
-      unitPrice = nums[0];
-      lineTotal = nums[1];
     } else {
       unitPrice = nums[0];
       lineTotal = nums[1];
@@ -330,7 +385,6 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
   } else if (nums.length === 1) {
     lineTotal = nums[0];
     unitPrice = nums[0];
-    quantity = 1;
   }
 
   const unitPricePaise = toPaise(unitPrice, currency);
