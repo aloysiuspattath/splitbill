@@ -7,8 +7,9 @@ export interface OcrProgress {
 }
 
 /**
- * Preprocesses an image via HTML5 Canvas (grayscale + contrast enhancement)
- * to maximize OCR text recognition accuracy.
+ * Preprocesses a receipt image via HTML5 Canvas with adaptive illumination
+ * normalization and shadow compensation. This removes camera shadows (e.g. hands/phone)
+ * and produces high-contrast, uniformly lit text for maximum OCR accuracy.
  */
 export async function preprocessImage(imageFile: File | Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -24,8 +25,8 @@ export async function preprocessImage(imageFile: File | Blob): Promise<string> {
         return;
       }
 
-      // Max dimension capping to ensure fast processing
-      const maxDim = 1800;
+      // Keep high resolution for sharp receipt font OCR
+      const maxDim = 2200;
       let width = img.width;
       let height = img.height;
 
@@ -46,19 +47,78 @@ export async function preprocessImage(imageFile: File | Blob): Promise<string> {
       const imgData = ctx.getImageData(0, 0, width, height);
       const d = imgData.data;
 
-      // Grayscale & simple contrast stretch
-      for (let i = 0; i < d.length; i += 4) {
-        const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-        // High contrast boost
-        const contrast = 1.3;
-        const adjusted = Math.min(255, Math.max(0, (gray - 128) * contrast + 128));
-        d[i] = adjusted;
-        d[i + 1] = adjusted;
-        d[i + 2] = adjusted;
+      // 1. Convert to 8-bit Grayscale array
+      const gray = new Uint8Array(width * height);
+      for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+        gray[p] = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
+      }
+
+      // 2. Adaptive Illumination Normalization (Shadow Removal)
+      // Estimate local background paper intensity across blocks
+      const blockSize = 32;
+      const gridW = Math.ceil(width / blockSize);
+      const gridH = Math.ceil(height / blockSize);
+      const bgMap = new Float32Array(gridW * gridH);
+
+      for (let gy = 0; gy < gridH; gy++) {
+        const yStart = gy * blockSize;
+        const yEnd = Math.min(height, yStart + blockSize);
+        for (let gx = 0; gx < gridW; gx++) {
+          const xStart = gx * blockSize;
+          const xEnd = Math.min(width, xStart + blockSize);
+
+          // Find high percentile brightness in block (representative of paper background)
+          let maxVal = 0;
+          let sum = 0;
+          let count = 0;
+          for (let y = yStart; y < yEnd; y += 2) {
+            const rowOffset = y * width;
+            for (let x = xStart; x < xEnd; x += 2) {
+              const val = gray[rowOffset + x];
+              if (val > maxVal) maxVal = val;
+              sum += val;
+              count++;
+            }
+          }
+          const avg = count > 0 ? sum / count : 128;
+          // Background estimate blends peak paper color with block average
+          bgMap[gy * gridW + gx] = Math.max(60, 0.7 * maxVal + 0.3 * avg);
+        }
+      }
+
+      // 3. Normalize each pixel against its local background
+      for (let y = 0; y < height; y++) {
+        const gy = Math.min(gridH - 1, Math.floor(y / blockSize));
+        const rowOffset = y * width;
+        const bgRowOffset = gy * gridW;
+
+        for (let x = 0; x < width; x++) {
+          const gx = Math.min(gridW - 1, Math.floor(x / blockSize));
+          const localBg = bgMap[bgRowOffset + gx];
+
+          const p = rowOffset + x;
+          const pixelVal = gray[p];
+
+          // Divide by background to eliminate shadows
+          let norm = (pixelVal / localBg) * 235;
+
+          // Gentle contrast curve to make text crisp
+          if (norm < 160) {
+            norm = Math.max(0, norm * 0.75); // Darken text
+          } else {
+            norm = Math.min(255, norm * 1.1); // Brighten paper
+          }
+
+          const outVal = Math.round(Math.min(255, Math.max(0, norm)));
+          const dIdx = p * 4;
+          d[dIdx] = outVal;
+          d[dIdx + 1] = outVal;
+          d[dIdx + 2] = outVal;
+        }
       }
 
       ctx.putImageData(imgData, 0, 0);
-      resolve(canvas.toDataURL('image/jpeg', 0.9));
+      resolve(canvas.toDataURL('image/jpeg', 0.92));
     };
 
     img.onerror = () => {
