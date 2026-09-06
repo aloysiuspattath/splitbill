@@ -144,6 +144,7 @@ export function App() {
       setIsOcrLoading(false);
       goToStep(1);
     } catch (err: any) {
+      console.error('Receipt scan error:', err);
       setIsOcrLoading(false);
       alert(err.message || 'OCR failed. Starting manual entry.');
       handleStartManual();

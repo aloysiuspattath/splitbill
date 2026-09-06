@@ -25,8 +25,8 @@ export async function preprocessImage(imageFile: File | Blob): Promise<string> {
         return;
       }
 
-      // Keep high resolution for sharp receipt font OCR
-      const maxDim = 2200;
+      // Keep optimal resolution for receipt fonts while keeping memory low on mobile
+      const maxDim = 1400;
       let width = img.width;
       let height = img.height;
 
@@ -159,14 +159,47 @@ export async function recognizeReceipt(
 
   onProgress?.({ status: 'Recognizing text...', progress: 40 });
 
-  const worker = await Tesseract.createWorker('eng', 1, {
-    logger: m => {
-      if (m.status === 'recognizing text') {
-        const pct = Math.round(40 + (m.progress || 0) * 55);
-        onProgress?.({ status: 'Reading receipt items...', progress: Math.min(95, pct) });
-      }
-    },
-  });
+  const isBrowser = typeof window !== 'undefined' && window.location;
+  const origin = isBrowser ? window.location.origin : '';
+  const basePath = `${origin}/tesseract`;
+
+  let worker: any = null;
+
+  try {
+    // 1. Attempt loading from same-origin /tesseract/ static assets (fast, offline-ready, no CORS/ISP blocks)
+    worker = await Tesseract.createWorker('eng', 1, {
+      workerPath: `${basePath}/worker.min.js`,
+      corePath: `${basePath}/tesseract-core-simd-lstm.wasm.js`,
+      langPath: basePath,
+      gzip: true,
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          const pct = Math.round(40 + (m.progress || 0) * 55);
+          onProgress?.({ status: 'Reading receipt items...', progress: Math.min(95, pct) });
+        }
+      },
+    });
+  } catch (localErr) {
+    console.warn('Local OCR assets failed to load, falling back to CDN worker:', localErr);
+    try {
+      // 2. Fallback to jsDelivr CDN
+      worker = await Tesseract.createWorker('eng', 1, {
+        workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@v5.1.1/dist/worker.min.js',
+        corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.1.1',
+        langPath: 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0_best_int',
+        gzip: true,
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            const pct = Math.round(40 + (m.progress || 0) * 55);
+            onProgress?.({ status: 'Reading receipt items...', progress: Math.min(95, pct) });
+          }
+        },
+      });
+    } catch (cdnErr) {
+      console.error('All OCR worker initialization attempts failed:', cdnErr);
+      throw new Error('Could not load OCR engine. Please check your connection or enter items manually.');
+    }
+  }
 
   try {
     const ret = await worker.recognize(processedImage);
@@ -179,8 +212,11 @@ export async function recognizeReceipt(
     onProgress?.({ status: 'Done!', progress: 100 });
 
     return parsed;
-  } catch (err) {
-    await worker.terminate();
+  } catch (err: any) {
+    console.error('Tesseract OCR recognition error:', err);
+    try {
+      await worker.terminate();
+    } catch {}
     throw new Error('OCR recognition failed. You can still enter or edit items manually.');
   }
 }
