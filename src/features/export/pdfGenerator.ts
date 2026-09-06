@@ -1,9 +1,13 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { Bill, CalculatedBillResult } from '../../types';
 import { formatMoney } from '../../utils/currency';
 
-export function generateBillPdf(bill: Bill, result: CalculatedBillResult): void {
+export async function generateBillPdf(bill: Bill, result: CalculatedBillResult): Promise<void> {
+  const [{ default: jsPDF }, autoTableModule] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ]);
+  const autoTable = (autoTableModule.default || autoTableModule) as any;
+
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',

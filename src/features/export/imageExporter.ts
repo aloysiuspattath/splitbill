@@ -1,5 +1,3 @@
-import { toPng } from 'html-to-image';
-
 /**
  * Captures an HTML element (e.g. the receipt card) and downloads it as a PNG image.
  */
@@ -8,6 +6,7 @@ export async function downloadElementAsImage(
   filename: string = 'splitbill-receipt.png'
 ): Promise<void> {
   try {
+    const { toPng } = await import('html-to-image');
     const dataUrl = await toPng(element, {
       quality: 0.95,
       pixelRatio: 2, // High resolution for mobile retina screens

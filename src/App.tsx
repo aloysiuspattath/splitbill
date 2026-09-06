@@ -1,16 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Bill, CalculatedBillResult } from './types';
 import { Header } from './components/Header';
 import { StepIndicator } from './components/StepIndicator';
 import { HomeScreen } from './pages/HomeScreen';
-import { ReviewReceiptStep } from './pages/ReviewReceiptStep';
-import { PeopleStep } from './pages/PeopleStep';
-import { AssignStep } from './pages/AssignStep';
-import { ReviewTaxDiscountStep } from './pages/ReviewTaxDiscountStep';
-import { ResultScreen } from './pages/ResultScreen';
 import { OcrLoadingModal } from './components/OcrLoadingModal';
-import { RecentBillsModal } from './components/RecentBillsModal';
-import { PrivacyModal } from './components/PrivacyModal';
 import { createDemoBill } from './utils/demoBill';
 import { calculateBill } from './features/calculation/engine';
 import { recognizeReceipt, OcrProgress } from './features/receipt/ocrService';
@@ -20,6 +13,28 @@ import {
   deleteBill,
   toggleKeepPermanently,
 } from './features/storage/db';
+
+const ReviewReceiptStep = lazy(() =>
+  import('./pages/ReviewReceiptStep').then(m => ({ default: m.ReviewReceiptStep }))
+);
+const PeopleStep = lazy(() =>
+  import('./pages/PeopleStep').then(m => ({ default: m.PeopleStep }))
+);
+const AssignStep = lazy(() =>
+  import('./pages/AssignStep').then(m => ({ default: m.AssignStep }))
+);
+const ReviewTaxDiscountStep = lazy(() =>
+  import('./pages/ReviewTaxDiscountStep').then(m => ({ default: m.ReviewTaxDiscountStep }))
+);
+const ResultScreen = lazy(() =>
+  import('./pages/ResultScreen').then(m => ({ default: m.ResultScreen }))
+);
+const RecentBillsModal = lazy(() =>
+  import('./components/RecentBillsModal').then(m => ({ default: m.RecentBillsModal }))
+);
+const PrivacyModal = lazy(() =>
+  import('./components/PrivacyModal').then(m => ({ default: m.PrivacyModal }))
+);
 
 const EMPTY_BILL: Bill = {
   id: `bill-${Date.now()}`,
@@ -215,65 +230,107 @@ export function App() {
           />
         )}
 
-        {step === 1 && (
-          <ReviewReceiptStep
-            restaurantName={bill.restaurantName}
-            onUpdateRestaurantName={name => setBill(prev => ({ ...prev, restaurantName: name }))}
-            date={bill.date}
-            onUpdateDate={d => setBill(prev => ({ ...prev, date: d }))}
-            currency={bill.currency}
-            items={bill.items}
-            onUpdateItems={items => setBill(prev => ({ ...prev, items }))}
-            onContinue={() => goToStep(2)}
-            onBack={() => setStep(0)}
-            ocrNotice={ocrNotice}
-          />
-        )}
+        <Suspense
+          fallback={
+            <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-3">
+              <div className="w-8 h-8 border-3 border-brand-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs font-semibold text-slate-400">Loading...</span>
+            </div>
+          }
+        >
+          {step === 1 && (
+            <ReviewReceiptStep
+              restaurantName={bill.restaurantName}
+              onUpdateRestaurantName={name => setBill(prev => ({ ...prev, restaurantName: name }))}
+              date={bill.date}
+              onUpdateDate={d => setBill(prev => ({ ...prev, date: d }))}
+              currency={bill.currency}
+              items={bill.items}
+              onUpdateItems={items => setBill(prev => ({ ...prev, items }))}
+              onContinue={() => goToStep(2)}
+              onBack={() => setStep(0)}
+              ocrNotice={ocrNotice}
+            />
+          )}
 
-        {step === 2 && (
-          <PeopleStep
-            people={bill.people}
-            items={bill.items}
-            onUpdatePeople={people => setBill(prev => ({ ...prev, people }))}
-            onUpdateItems={items => setBill(prev => ({ ...prev, items }))}
-            onContinue={() => goToStep(3)}
-            onBack={() => goToStep(1)}
-          />
-        )}
+          {step === 2 && (
+            <PeopleStep
+              people={bill.people}
+              items={bill.items}
+              onUpdatePeople={people => setBill(prev => ({ ...prev, people }))}
+              onUpdateItems={items => setBill(prev => ({ ...prev, items }))}
+              onContinue={() => goToStep(3)}
+              onBack={() => goToStep(1)}
+            />
+          )}
 
-        {step === 3 && (
-          <AssignStep
-            items={bill.items}
-            people={bill.people}
-            currency={bill.currency}
-            onUpdateItems={items => setBill(prev => ({ ...prev, items }))}
-            onContinue={() => goToStep(4)}
-            onBack={() => goToStep(2)}
-          />
-        )}
+          {step === 3 && (
+            <AssignStep
+              items={bill.items}
+              people={bill.people}
+              currency={bill.currency}
+              onUpdateItems={items => setBill(prev => ({ ...prev, items }))}
+              onContinue={() => goToStep(4)}
+              onBack={() => goToStep(2)}
+            />
+          )}
 
-        {step === 4 && (
-          <ReviewTaxDiscountStep
-            bill={bill}
-            currency={bill.currency}
-            onUpdateTaxes={taxes => setBill(prev => ({ ...prev, taxes }))}
-            onUpdateDiscount={discount => setBill(prev => ({ ...prev, discount }))}
-            onUpdateTip={tipPaise => setBill(prev => ({ ...prev, customTipPaise: tipPaise }))}
-            onContinue={() => goToStep(5)}
-            onBack={() => goToStep(3)}
-          />
-        )}
+          {step === 4 && (
+            <ReviewTaxDiscountStep
+              bill={bill}
+              currency={bill.currency}
+              onUpdateTaxes={taxes => setBill(prev => ({ ...prev, taxes }))}
+              onUpdateDiscount={discount => setBill(prev => ({ ...prev, discount }))}
+              onUpdateTip={tipPaise => setBill(prev => ({ ...prev, customTipPaise: tipPaise }))}
+              onContinue={() => goToStep(5)}
+              onBack={() => goToStep(3)}
+            />
+          )}
 
-        {step === 5 && (
-          <ResultScreen
-            bill={bill}
-            result={calculationResult}
-            currency={bill.currency}
-            onSaveBill={handleSaveBill}
-            onStartNewBill={handleStartManual}
-            onEditBill={() => goToStep(1)}
-          />
-        )}
+          {step === 5 && (
+            <ResultScreen
+              bill={bill}
+              result={calculationResult}
+              currency={bill.currency}
+              onSaveBill={handleSaveBill}
+              onStartNewBill={handleStartManual}
+              onEditBill={() => goToStep(1)}
+            />
+          )}
+
+          {/* Recent Bills Drawer Modal */}
+          {isRecentOpen && (
+            <RecentBillsModal
+              isOpen={isRecentOpen}
+              bills={recentBills}
+              onClose={() => setIsRecentOpen(false)}
+              onOpenBill={opened => {
+                setBill(opened);
+                setMaxAccessibleStep(5);
+                goToStep(5);
+              }}
+              onDeleteBill={async id => {
+                await deleteBill(id);
+                await refreshRecentBills();
+              }}
+              onTogglePermanent={async id => {
+                await toggleKeepPermanently(id);
+                await refreshRecentBills();
+              }}
+              onImportBill={imported => {
+                setBill(imported);
+                setMaxAccessibleStep(5);
+                goToStep(5);
+                saveBill(imported).then(refreshRecentBills);
+              }}
+            />
+          )}
+
+          {/* Privacy Policy Modal */}
+          {isPrivacyOpen && (
+            <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
+          )}
+        </Suspense>
       </main>
 
       {/* OCR Progress Modal */}
@@ -287,35 +344,6 @@ export function App() {
           imagePreviewUrl={ocrPreviewUrl}
         />
       )}
-
-      {/* Recent Bills Drawer Modal */}
-      <RecentBillsModal
-        isOpen={isRecentOpen}
-        bills={recentBills}
-        onClose={() => setIsRecentOpen(false)}
-        onOpenBill={opened => {
-          setBill(opened);
-          setMaxAccessibleStep(5);
-          goToStep(5);
-        }}
-        onDeleteBill={async id => {
-          await deleteBill(id);
-          await refreshRecentBills();
-        }}
-        onTogglePermanent={async id => {
-          await toggleKeepPermanently(id);
-          await refreshRecentBills();
-        }}
-        onImportBill={imported => {
-          setBill(imported);
-          setMaxAccessibleStep(5);
-          goToStep(5);
-          saveBill(imported).then(refreshRecentBills);
-        }}
-      />
-
-      {/* Privacy Policy Modal */}
-      <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
     </div>
   );
 }

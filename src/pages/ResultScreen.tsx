@@ -13,7 +13,6 @@ import {
   Download,
   RotateCcw,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { Bill, CalculatedBillResult, CurrencyCode } from '../types';
 import { formatMoney } from '../utils/currency';
 import { shareBillSummary, copyBillSummary } from '../features/export/shareService';
@@ -47,16 +46,16 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
   // Trigger celebration confetti once when screen loads
   useEffect(() => {
-    try {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#2563eb', '#3b82f6', '#10b981', '#f59e0b', '#ec4899'],
-      });
-    } catch {
-      // Ignored if blocked in environment
-    }
+    import('canvas-confetti')
+      .then(({ default: confetti }) => {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#2563eb', '#3b82f6', '#10b981', '#f59e0b', '#ec4899'],
+        });
+      })
+      .catch(() => {});
   }, []);
 
   const handleCopy = async () => {
@@ -71,8 +70,8 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
     await shareBillSummary(bill, result, false);
   };
 
-  const handleDownloadPdf = () => {
-    generateBillPdf(bill, result);
+  const handleDownloadPdf = async () => {
+    await generateBillPdf(bill, result);
   };
 
   const handleDownloadImage = async () => {

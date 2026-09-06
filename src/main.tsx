@@ -9,32 +9,34 @@ import { checkForAppUpdate } from './utils/versionCheck';
 // Clean up any cache-busting URL parameter from force reloads
 cleanupReloadParam();
 
-// Check for newer deployment immediately on app launch
-checkForAppUpdate();
+if (!import.meta.env.DEV) {
+  // Check for newer deployment immediately on app launch
+  checkForAppUpdate();
 
-// Auto-reload window when a newly installed service worker takes control
-let refreshing = false;
-navigator.serviceWorker?.addEventListener('controllerchange', () => {
-  if (!refreshing) {
-    refreshing = true;
-    window.location.reload();
-  }
-});
+  // Auto-reload window when a newly installed service worker takes control
+  let refreshing = false;
+  navigator.serviceWorker?.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
 
-// Check for new deployments whenever user switches back to the app or focuses
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
+  // Check for new deployments whenever user switches back to the app or focuses
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkForAppUpdate();
+    }
+  });
+  window.addEventListener('focus', () => {
     checkForAppUpdate();
-  }
-});
-window.addEventListener('focus', () => {
-  checkForAppUpdate();
-});
+  });
 
-// Also check periodically every 10 minutes
-setInterval(() => {
-  checkForAppUpdate();
-}, 10 * 60 * 1000);
+  // Also check periodically every 10 minutes
+  setInterval(() => {
+    checkForAppUpdate();
+  }, 10 * 60 * 1000);
+}
 
 // Register PWA Service Worker with aggressive update checks on mobile
 const updateSW = registerSW({

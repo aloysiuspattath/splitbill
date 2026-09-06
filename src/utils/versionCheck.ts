@@ -16,6 +16,26 @@ let isChecking = false;
 export async function checkForAppUpdate(options?: {
   onUpdateDetected?: () => void;
 }): Promise<boolean> {
+  // 1. Never auto-check on localhost or in Vite development mode
+  if (
+    import.meta.env.DEV ||
+    typeof window === 'undefined' ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  ) {
+    return false;
+  }
+
+  // 2. Never check if currently possessing reload query or reloaded in last 60s
+  if (window.location.search.includes('reload=')) {
+    return false;
+  }
+
+  const lastReload = typeof localStorage !== 'undefined' ? localStorage.getItem('splitbill_last_force_reload') : null;
+  if (lastReload && Date.now() - parseInt(lastReload, 10) < 60000) {
+    return false;
+  }
+
   if (isChecking) return false;
   isChecking = true;
 
