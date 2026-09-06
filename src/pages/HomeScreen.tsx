@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Camera, Upload, PenLine, History, Sparkles, Shield, ArrowRight, Zap } from 'lucide-react';
 
 interface HomeScreenProps {
@@ -16,6 +16,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 }) => {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = useRef(0);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -24,8 +26,92 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     }
   };
 
+  // Clipboard Paste Support (Ctrl+V / Cmd+V)
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            e.preventDefault();
+            onStartScan(file);
+            return;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [onStartScan]);
+
+  // Drag and Drop Handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current <= 0) {
+      setIsDragging(false);
+      dragCounter.current = 0;
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type.startsWith('image/')) {
+          onStartScan(file);
+          return;
+        }
+      }
+    }
+  };
+
   return (
-    <div className="max-w-md mx-auto px-5 py-6 flex flex-col items-center text-center">
+    <div
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      className="relative max-w-md mx-auto px-5 py-6 flex flex-col items-center text-center min-h-[85vh] justify-between"
+    >
+      {/* Full-Screen Drag & Drop Overlay */}
+      {isDragging && (
+        <div className="fixed inset-0 z-50 bg-brand-600/90 dark:bg-brand-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-white animate-fadeIn pointer-events-none">
+          <div className="w-24 h-24 rounded-3xl bg-white/20 border-2 border-dashed border-white flex items-center justify-center mb-4 animate-bounce">
+            <Upload className="w-12 h-12 text-white" />
+          </div>
+          <h3 className="text-2xl font-black mb-1">Drop Your Receipt Here</h3>
+          <p className="text-sm font-medium text-white/80 text-center max-w-xs">
+            Release to start instant client-side OCR scanning
+          </p>
+        </div>
+      )}
       {/* Camera capture input (opens camera directly on mobile) */}
       <input
         ref={cameraInputRef}
@@ -116,6 +202,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <span>Upload Bill Image</span>
           <ArrowRight className="w-4 h-4 ml-auto opacity-40" />
         </button>
+
+        {/* Drag & Drop / Paste Hint */}
+        <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 py-0.5">
+          ✨ Or drag & drop / paste (<kbd className="px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-[10px] font-mono">Ctrl+V</kbd>) receipt images directly
+        </p>
 
         {/* Enter Bill Manually Button */}
         <button
