@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Camera, PenLine, History, Sparkles, Shield, ArrowRight, Zap } from 'lucide-react';
+import { Camera, Upload, PenLine, History, Sparkles, Shield, ArrowRight, Zap } from 'lucide-react';
 
 interface HomeScreenProps {
   onStartManual: () => void;
@@ -14,22 +14,33 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenRecent,
   onLoadDemo,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       onStartScan(e.target.files[0]);
+      e.target.value = ''; // Reset so same file can be selected again
     }
   };
 
   return (
     <div className="max-w-md mx-auto px-5 py-6 flex flex-col items-center text-center">
-      {/* Hidden camera / file input */}
+      {/* Camera capture input (opens camera directly on mobile) */}
       <input
-        ref={fileInputRef}
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      {/* Gallery / File upload input (opens photo library or file browser) */}
+      <input
+        ref={uploadInputRef}
+        type="file"
+        accept="image/*"
         onChange={handleFileChange}
         className="hidden"
       />
@@ -86,22 +97,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
       {/* Main Action Buttons */}
       <div className="w-full space-y-3 mb-6">
-        {/* Scan Receipt Button */}
+        {/* Scan with Camera Button */}
         <button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => cameraInputRef.current?.click()}
           className="w-full py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-bold text-base shadow-[0_8px_16px_rgb(37,99,235,0.25)] flex items-center justify-center gap-3 active:scale-95 transition-all duration-300"
         >
           <Camera className="w-5 h-5" />
-          <span>Scan Receipt</span>
+          <span>Scan with Camera</span>
           <ArrowRight className="w-4 h-4 ml-auto opacity-70" />
+        </button>
+
+        {/* Upload Bill Image Button */}
+        <button
+          onClick={() => uploadInputRef.current?.click()}
+          className="w-full py-4 px-6 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-800 dark:text-slate-100 font-bold text-base shadow-[0_2px_8px_rgb(0,0,0,0.08)] flex items-center justify-center gap-3 active:scale-95 transition-all duration-300 border border-black/5 dark:border-transparent hover:bg-slate-50 dark:hover:bg-[#2c2c2e]"
+        >
+          <Upload className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+          <span>Upload Bill Image</span>
+          <ArrowRight className="w-4 h-4 ml-auto opacity-40" />
         </button>
 
         {/* Enter Bill Manually Button */}
         <button
           onClick={onStartManual}
-          className="w-full py-4 px-6 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-800 dark:text-slate-100 font-bold text-base shadow-[0_2px_8px_rgb(0,0,0,0.08)] flex items-center justify-center gap-2.5 active:scale-95 transition-all duration-300"
+          className="w-full py-3.5 px-6 rounded-[20px] bg-slate-100/80 dark:bg-[#2c2c2e] text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-[#3c3c3e] flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
         >
-          <PenLine className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+          <PenLine className="w-4 h-4 text-slate-500 dark:text-slate-400" />
           <span>Enter Bill Manually</span>
         </button>
 
