@@ -10,6 +10,7 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyConfig> = {
   AUD: { code: 'AUD', symbol: 'A$', name: 'Australian Dollar', decimals: 2 },
   CAD: { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar', decimals: 2 },
   JPY: { code: 'JPY', symbol: '¥', name: 'Japanese Yen', decimals: 0 },
+  CHF: { code: 'CHF', symbol: 'CHF', name: 'Swiss Franc', decimals: 2 },
 };
 
 /**

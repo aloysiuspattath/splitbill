@@ -13,9 +13,12 @@ export interface ParsedReceiptData {
 
 // Common metadata and noise patterns that can never be bill items
 const METADATA_PATTERNS = [
-  /\b(date|time|dina?\s*in|table|token|waiter|captain|server|cashier|bill\s*no|order\s*no|order\s*#|gstin|fssai|tel|ph|phone|email|www\.|welcome|thank\s*you|visit\s*again)\b/i,
+  /\b(date|time|dina?\s*in|table|tbl|tisch|token|waiter|captain|server|cashier|bill\s*no|order\s*no|order\s*#|gstin|fssai|tel|ph|phone|email|www\.|welcome|thank\s*you|visit\s*again)\b/i,
+  /\b(chk|check|stn|station|pax|covers?|guests?|terminal|shift|drawer|dining\s*room)\b/i,
+  /\b(rech\s*\.?\s*nr|rechnung|facture|fattura|recibo|comprobante)\b/i,
   /\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/, // dates like 04/09/26 or 31-08-2026
-  /\b\d{1,2}:\d{2}(:\d{2})?\s*(am|pm)?\b/i, // times like 21:30 or 08:48 PM
+  /\b\d{1,2}:\d{2}(:\d{2})?\s*(am|pm)\b/i, // times with am/pm like 07:20PM or 08:48 PM
+  /\b([01]?\d|2[0-3]):[0-5]\d(:[0-5]\d)?\b(?!\.\d)/, // 24h times without decimal (blocks matching prices like 1:23.81)
   /\b\d{1,2}\.\d{2}\s*(am|pm)\b/i, // times with dot like 08.48 PM
   /\bph[:\s]*\d+/i, // phone numbers
   /\b\d{10}\b/, // standalone 10-digit phone numbers like 9633624533
@@ -27,7 +30,11 @@ const METADATA_PATTERNS = [
   /\bfssai\b/i,
   /\bpillar\b/i,
   /\b(ctr|staff)\b/i,
-  /\b(item|particulars|description)\b.*\b(qty|rate|price|amount)\b/i,
+  /\b(street|road|st\.|ave|avenue|blvd|lane|nagar|floor|pincode|pin\s*code|dist|district|junction|building|tower|mall|complex|metro|pillar)\b/i,
+  /\b(tax\s*invoice|retail\s*invoice|cash\s*memo|cash\s*receipt|original\s*for\s*recipient|duplicate|bill\s*of\s*supply|guest\s*check|customer\s*copy)\b/i,
+  /\b(item|items|particulars|description|desc)\b.*\b(qty|rate|price|amount|amt|total)\b/i,
+  /\b(qty|quantity)\b.*\b(price|rate|amount|amt|total)\b/i,
+  /\brate\b.*\b(qty|amount)\b/i,
   /qty\.\s*(price|amount|rate)/i,
   /^[=\-_*#—~]{2,}$/, // divider lines
   /^(cash|card|upi|paytm|gpay|visa|mastercard)/i,
@@ -40,44 +47,90 @@ function isMetadataOrHeaderLine(line: string): boolean {
   return METADATA_PATTERNS.some(p => p.test(line));
 }
 
+function cleanRestaurantTitle(raw: string): string {
+  return raw
+    .replace(/^[\\/'"_*#—~`|:;\s-]+|[\\/'"_*#—~`|:;\s-]+$/g, '')
+    .replace(/^[a-z]{1,2}\s+(?=[A-Z])/i, '')
+    .replace(/[\d.,₹$€£#*~_\\/]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+interface DetectedRestaurant {
+  name: string;
+  lineIndex: number;
+}
+
 /**
- * Detects the restaurant name from the top header lines,
- * ignoring stray OCR noise like "ban '", "x Tr BILL", or addresses.
+ * Detects the restaurant name from the top header lines.
+ * Generally the first title line (skipping generic invoice headers like TAX INVOICE/BILL).
  */
-function detectRestaurantName(lines: string[]): string {
-  // First priority: lines with known restaurant keywords
+function detectRestaurantName(lines: string[]): DetectedRestaurant {
+  // First priority: lines with known restaurant/food brand keywords
   for (let i = 0; i < Math.min(8, lines.length); i++) {
     const l = lines[i];
     if (/if\s*thar/i.test(l)) {
-      return 'IFTHAR';
+      return { name: 'IFTHAR', lineIndex: i };
     }
-    if (/sulthan|veedu|restaurant|hotel|cafe|kitchen|bakes|diner/i.test(l)) {
-      if (/sulthan|veedu|lthan\s*ve/i.test(l)) {
-        return 'Sulthan Veedu Restaurant';
+    if (/sulthan|veedu|lthan\s*ve/i.test(l)) {
+      return { name: 'Sulthan Veedu Restaurant', lineIndex: i };
+    }
+    if (/restaurant|hotel|cafe|kitchen|bakes|bakery|diner|bistro|pizzeria|grill|barbeque|biryani|coffee|tea|dhaba|house|sweets/i.test(l)) {
+      const clean = cleanRestaurantTitle(l);
+      if (clean.length >= 3 && !/^(tax\s*invoice|bill|receipt|cash\s*memo)$/i.test(clean)) {
+        return { name: clean, lineIndex: i };
       }
-      return l.replace(/[\d.,₹$€£#*~_\\/]+/g, '').trim();
     }
   }
 
-  // Second priority: first clean title line with >= 4 chars, skipping generic words like "BILL"
+  // Second priority: The FIRST clean title line at the top of the receipt
   for (let i = 0; i < Math.min(6, lines.length); i++) {
     const l = lines[i].trim();
     if (
-      l.length >= 4 &&
+      l.length >= 3 &&
       !isMetadataOrHeaderLine(l) &&
       !/\d{4,}/.test(l) &&
-      !/^(bill|tax\s*invoice|invoice|receipt|cash\s*memo)$/i.test(l) &&
-      !/companypady|aluva|kerala|road|street|pillar/i.test(l)
+      !/^(bill|tax\s*invoice|retail\s*invoice|invoice|receipt|cash\s*memo|cash\s*receipt|guest\s*check)$/i.test(l) &&
+      !/companypady|aluva|kerala|road|street|pillar|floor/i.test(l)
     ) {
-      const clean = l.replace(/[\d.,₹$€£#*~_\\/]+/g, '').trim();
-      // Ignore lowercase noise words like "ban '" or "x Tr BILL"
-      if (clean.length >= 4 && !/^[a-z\s']+$/.test(clean) && !/\bbill\b/i.test(clean)) {
-        return clean;
+      const clean = cleanRestaurantTitle(l);
+      // Skip lowercase noise words like "ban '" or generic words
+      if (clean.length >= 3 && !/^[a-z\s']+$/.test(clean) && !/\bbill\b/i.test(clean)) {
+        return { name: clean, lineIndex: i };
       }
     }
   }
 
-  return 'Restaurant Bill';
+  return { name: 'Restaurant Bill', lineIndex: -1 };
+}
+
+/**
+ * Finds the line index where itemized bill rows start.
+ * Table header line (e.g. "Item Qty Price Amount") or lines following top metadata.
+ */
+function findItemsTableStartIndex(lines: string[], restaurantLineIndex: number): number {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (
+      /\b(item|items|particulars|description|desc)\b.*\b(qty|quantity|count|rate|price|unit|amount|amt|total)\b/i.test(line) ||
+      /\b(qty|quantity)\b.*\b(price|rate|amount|amt|total)\b/i.test(line) ||
+      /\brate\b.*\b(qty|amount)\b/i.test(line)
+    ) {
+      return i + 1; // Items strictly begin immediately after table header
+    }
+  }
+
+  // If no explicit table column header was detected, items start after restaurant name and top metadata
+  let startIndex = Math.max(0, restaurantLineIndex + 1);
+  while (startIndex < lines.length) {
+    const line = lines[startIndex];
+    if (isMetadataOrHeaderLine(line) || /^[=\-_*#—~]{2,}$/.test(line)) {
+      startIndex++;
+    } else {
+      break;
+    }
+  }
+  return startIndex;
 }
 
 /**
@@ -93,7 +146,8 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
 
   const items: BillItem[] = [];
   const detectedTaxes: TaxItem[] = [];
-  const restaurantName = detectRestaurantName(lines);
+  const { name: restaurantName, lineIndex: restaurantLineIndex } = detectRestaurantName(lines);
+  const tableStartIdx = findItemsTableStartIndex(lines, restaurantLineIndex);
   let detectedSubtotalPaise: number | undefined;
   let detectedDiscountPaise: number | undefined;
   let detectedTotalPaise: number | undefined;
@@ -111,11 +165,20 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
       itemsSectionEnded = true;
     }
 
-    // Check for Taxes (CGST, SGST, VAT, GST, Tax, Service Charge)
-    const taxMatch = line.match(/\b(cgst|sgst|vat|gst|tax|service\s*charge)\b\s*@?\s*([\d.]+)?%?/i);
+    // Check for Taxes (CGST, SGST, VAT, GST, Tax, Service Charge, MwSt, Ust, IVA, TVA)
+    const taxMatch = line.match(/\b(cgst|sgst|vat|gst|tax|service\s*charge|mwst|ust|iva|tva)\b/i);
     if (taxMatch && !/gstin/i.test(line)) {
       const taxName = taxMatch[1].toUpperCase();
-      const taxRate = taxMatch[2] ? parseFloat(taxMatch[2]) : (taxName === 'CGST' || taxName === 'SGST' ? 2.5 : undefined);
+      const pctMatch = line.match(/([\d.]+)%/);
+      const afterMatch = line.slice(taxMatch.index! + taxMatch[0].length).match(/^\s*@?\s*([\d.]+)/);
+      let taxRate: number | undefined = pctMatch
+        ? parseFloat(pctMatch[1])
+        : afterMatch && parseFloat(afterMatch[1]) < 100
+        ? parseFloat(afterMatch[1])
+        : taxName === 'CGST' || taxName === 'SGST'
+        ? 2.5
+        : undefined;
+
       const numbers = extractNumbersFromLine(line);
       const taxAmount = numbers.length > 0 ? toPaise(numbers[numbers.length - 1], currency) : 0;
 
@@ -167,6 +230,11 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
       if (numbers.length > 0) {
         detectedDiscountPaise = toPaise(numbers[numbers.length - 1], currency);
       }
+      continue;
+    }
+
+    // Lines before the items table header CAN NEVER be bill items
+    if (i < tableStartIdx) {
       continue;
     }
 
@@ -223,6 +291,10 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
     }
   }
 
+  if (!detectedTotalPaise && detectedSubtotalPaise) {
+    detectedTotalPaise = detectedSubtotalPaise;
+  }
+
   return {
     restaurantName: restaurantName || undefined,
     items,
@@ -235,14 +307,36 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
 }
 
 function cleanItemName(name: string): string {
-  return name
+  let cleaned = name
+    .replace(/_/g, ' ') // replace underscore FIRST (e.g. CKN_NADAN -> CKN NADAN)
+    .replace(/\bJulce\b/gi, 'Juice') // fix common OCR typo in drinks
+    .replace(/\bS(00ML|OOML)\b/gi, '500ML') // fix OCR misread of 500ML
+    .replace(/^(\d{1,3})[.)\]\s-]+\s*/, '') // strip leading serial numbers (1., 01), [1])
     .replace(/^[a-z0-9]{1,2}\s+(?=[A-Za-z])/i, '') // strip leading 1-2 char stray OCR debris like "L ", "vf ", "x "
-    .replace(/[—\-_*#=~|]+.*$/g, '')
+    .replace(/^(vf|vl|lf|xr|xl)(?=[A-Z])/i, '') // strip leading stray prefixes stuck to words (VFLIME -> LIME)
+    .replace(/^[*\-_#—~|•>\s:;]+/, '') // strip leading symbols
+    .replace(/[—\-_*#=~|]{2,}.*$/g, '') // only replace divider of 2+ symbols (preserves single hyphens like GL-BAROLO)
     .replace(/\b(of\s*v|ox\s*l|up\d+|at\s*k\s*\(?|f\s*ba|:\s*a)\b.*$/i, '')
-    .replace(/\s+[a-zA-Z0-9:()\[\]]{1,2}$/, '') // strip trailing orphan characters
-    .replace(/_/g, ' ') // replace underscore (e.g. CKN_NADAN -> CKN NADAN)
+    .replace(/[\s©®™*#~|\\/]+$/, '') // strip trailing symbols like ©, ®, ™, *, |
+    .replace(/\s+(?!(?:PN|GL|OZ|KG|ML|GM|LT|LB|XL)\b)[a-zA-Z0-9:()\[\]]{1,2}$/, '') // strip trailing orphan characters unless known food/wine acronym
+    .replace(/\s+[à@]$/i, '') // strip trailing European unit indicators (e.g. "à")
+    .replace(/\b(pay|amt|rate|price|rs|ra|ea|qty|qtv)\.?$/i, '') // strip trailing payment/price/rate labels
+    .replace(/[\s.:\-_*#—~|\\/@]+$/, '') // strip trailing dots/dashes/symbols connecting to prices
     .replace(/\s{2,}/g, ' ')
     .trim();
+
+  // Validate that cleaned name is a plausible food item and not OCR gibberish
+  const letterCount = (cleaned.match(/[a-zA-Z]/g) || []).length;
+  if (letterCount < 2) return '';
+
+  const hasVowel = /[aeiouyAEIOUY]/.test(cleaned);
+  const hasAcronym = /\b(CKN|BBQ|BLT|QTR|HALF|PCS|ML|KG|LTR|GL|GLS)\b/i.test(cleaned);
+  if (!hasVowel && !hasAcronym) return '';
+
+  const nonWordCount = (cleaned.match(/[^a-zA-Z0-9\s]/g) || []).length;
+  if (nonWordCount > letterCount) return '';
+
+  return cleaned;
 }
 
 function extractNumbersFromLine(str: string): number[] {
@@ -269,23 +363,46 @@ function extractNumbersFromLine(str: string): number[] {
 function tryParseSmartItem(line: string, currency: CurrencyCode, index: number): BillItem | null {
   let cleanedLine = line.trim();
 
-  // 1. Check & strip leading serial numbers: e.g. "1. Butter Chicken", "01) Naan", "[1] Rice"
+  // 1. Separate OCR merged fraction: e.g. "11/2 GL" -> "1 1/2 GL"
+  cleanedLine = cleanedLine.replace(/^(\d)(1\/[248]|3\/4)\s+/i, '$1 $2 ');
+
+  // 2. Pre-clean colons between numbers: e.g. "1:23.81" -> "1 23.81"
+  cleanedLine = cleanedLine.replace(/(\d+):(\d+\.\d{1,2})/g, '$1 $2');
+
+  // 3. Pre-clean slashed digits in prices: e.g. "1/6.19" -> "1 76.19"
+  cleanedLine = cleanedLine.replace(/(\d)\/(\d+\.\d{2})/g, '$1 7$2');
+
+  // 4. Normalize course prefixes: e.g. "1D SOUP" -> "1 SOUP", "1.0 LOBSTER" -> "1 LOBSTER"
+  cleanedLine = cleanedLine.replace(/^(\d{1,2})[.\s]*[dDlL]\s+([a-zA-Z])/i, '$1 $2');
+  cleanedLine = cleanedLine.replace(/^(\d{1,2})\.0\s+([a-zA-Z])/i, '$1 $2');
+
+  // 5. If line begins with "10 <Dish>" and ends with single price, treat 10 as 1 (OCR misread "1 D")
+  cleanedLine = cleanedLine.replace(/^1[0O]\s+([A-Z][a-zA-Z\s\-]+?\s+\d+(?:\.\d{1,2})?)$/, (match, rest) => {
+    const words = rest.trim().split(/\s+/);
+    const lastTok = words[words.length - 1];
+    if (/^\d+(?:\.\d{1,2})?$/.test(lastTok)) {
+      return `1 ${rest}`;
+    }
+    return match;
+  });
+
+  // 6. Check & strip leading serial numbers: e.g. "1. Butter Chicken", "01) Naan", "[1] Rice"
   const serialMatch = cleanedLine.match(/^(\d{1,3})[.)\]\s-]+\s+([a-zA-Z].+)$/);
   if (serialMatch) {
     cleanedLine = serialMatch[2].trim();
   }
 
-  // 2. Check for leading quantity: e.g. "2x Burger", "2 * Fries", "1 Avocado Toast"
+  // 7. Check for leading quantity: e.g. "2x Burger", "2xLatte", "1 Avocado Toast", "1 1/2 GL Wine"
   let leadingQty: number | undefined;
 
-  // Leading "2x " or "2 x "
-  const leadingXQtyMatch = cleanedLine.match(/^(\d{1,2})\s*(?:x|\*|@)\s+(.+)$/i);
+  // Leading "2x " or "2x" or "2 * "
+  const leadingXQtyMatch = cleanedLine.match(/^(\d{1,2})\s*(?:x|\*|@)\s*(.+)$/i);
   if (leadingXQtyMatch) {
     leadingQty = parseInt(leadingXQtyMatch[1], 10);
     cleanedLine = leadingXQtyMatch[2].trim();
   } else {
-    // Leading standalone number followed by words and a trailing price: e.g. "1 Avocado Toast 14.50"
-    const leadingNumMatch = cleanedLine.match(/^(\d{1,2})\s+([a-zA-Z].+?\s+\d+(?:[.,]\d{1,2})?.*)$/);
+    // Leading standalone number followed by words (or fractions) and a trailing price
+    const leadingNumMatch = cleanedLine.match(/^(\d{1,2})(?:\.0?)?\s+((?:[a-zA-Z]|1\/[248]|3\/4).+?\s+\d+(?:[.,]\d{1,2})?.*)$/);
     if (leadingNumMatch) {
       leadingQty = parseInt(leadingNumMatch[1], 10);
       cleanedLine = leadingNumMatch[2].trim();
@@ -300,10 +417,13 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
 
   for (let idx = 0; idx < tokens.length; idx++) {
     const rawTok = tokens[idx];
-    const cleanedTok = rawTok.replace(/[€₹$£]/g, '').replace(/¢/g, '0');
+    const cleanedTok = rawTok
+      .replace(/^[€₹$£Rp.\/:]+/, '')
+      .replace(/[€₹$£()]/g, '')
+      .replace(/¢/g, '0');
     const numVal = parseFloat(cleanedTok.replace(/[^0-9.]/g, ''));
-    // Enforce valid food price bounds (< 50,000) to discard phone numbers or barcodes
-    if (!isNaN(numVal) && numVal > 0 && numVal < 50000 && /^[\d.,cC¢]+$/.test(rawTok.replace(/[()]/g, ''))) {
+    // Enforce valid food price bounds (< 50,000) and NO slashes in price tokens (preserves fractions like 1/2 in names)
+    if (!isNaN(numVal) && numVal > 0 && numVal < 50000 && /^[\d.,cC¢:]+$/.test(rawTok.replace(/[()]/g, ''))) {
       numMatches.push({ index: idx, val: numVal });
       if (firstNumIdx === -1) firstNumIdx = idx;
     }
@@ -329,7 +449,17 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
 
   const nums = numMatches.map(m => m.val);
 
-  if (nums.length >= 3) {
+  if (leadingQty && nums.length >= 2) {
+    // Leading quantity given with unit price and total price: e.g. "2x Latte à 4.50 CHF 9.00"
+    if (Math.abs(leadingQty * nums[0] - nums[1]) < 0.5) {
+      quantity = leadingQty;
+      unitPrice = nums[0];
+      lineTotal = nums[1];
+    } else {
+      unitPrice = nums[0];
+      lineTotal = nums[1];
+    }
+  } else if (nums.length >= 3) {
     // E.g. [2, 240.00, 480] or [1, 370.00, 37] or [17.15, 4, 68.60]
     // Check for exact arithmetic match: a * b = c
     interface MatchCandidate {
@@ -386,7 +516,20 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
       }
     }
   } else if (nums.length === 2) {
-    if (nums[0] >= 1 && nums[0] <= 50 && Number.isInteger(nums[0]) && !leadingQty) {
+    // Check if first number has a fused quantity prefix: e.g. "147.62 47.62" -> Qty 1, Rate 47.62
+    const s0 = nums[0].toFixed(2);
+    const s1 = nums[1].toFixed(2);
+    if (s0.length > s1.length && s0.endsWith(s1)) {
+      const qtyPrefix = parseInt(s0.slice(0, s0.length - s1.length), 10);
+      if (!isNaN(qtyPrefix) && qtyPrefix >= 1 && qtyPrefix <= 50) {
+        quantity = qtyPrefix;
+        unitPrice = nums[1];
+        lineTotal = Math.round(quantity * unitPrice * 100) / 100;
+      } else {
+        unitPrice = nums[0];
+        lineTotal = nums[1];
+      }
+    } else if (nums[0] >= 1 && nums[0] <= 50 && Number.isInteger(nums[0]) && !leadingQty) {
       quantity = nums[0];
       unitPrice = nums[1];
       lineTotal = Math.round(quantity * unitPrice * 100) / 100;

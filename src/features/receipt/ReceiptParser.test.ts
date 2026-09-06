@@ -277,4 +277,161 @@ TOTAL PAYABLE : 719.00
     expect(result.detectedSubtotalPaise).toBe(68461);
     expect(result.detectedTotalPaise).toBe(71900);
   });
+
+  // 8. Real-world Indian Restaurant Bill (Hotel Vishwanand Navi Mumbai)
+  it('parses real-world Hotel Vishwanand bill with GST, items, and OCR noise', () => {
+    const rawText = `
+_— HOTEL VISHWANAND
+\\ Om Chanakya CHS Ltd,Sec:6
+CBD Belapur,Navi Mumbai
+Ph: 9653245007, 9082331031
+Ee TAX INVOICE ---=c-a------
+- Date : 28/01/26 Bill No. : 13
+1480. 21 ow a2
+Particulars Qty Rate Amount
+VEG BIRYANI hg © 192.38
+TRIPLE SEZ FRIED RICE 1 200 200
+MISAL PAV Pay 1/6.19
+COLD DRINKS 200ML ra. 1:23.81
+COLD DRINKS SOOML 147.62 47.62
+: Sub Total : 500.00 |
+SGST @2.5% : 12.50
+CGST @2.5% : 12.50
+Food Total : 525 0
+Total : 525
+`;
+
+    const result = parseReceiptText(rawText, 'INR');
+
+    expect(result.restaurantName).toBe('HOTEL VISHWANAND');
+    expect(result.items.length).toBe(5);
+
+    expect(result.items[0].name).toBe('VEG BIRYANI');
+    expect(result.items[0].totalPricePaise).toBe(19238);
+
+    expect(result.items[1].name).toBe('TRIPLE SEZ FRIED RICE');
+    expect(result.items[1].quantity).toBe(1);
+    expect(result.items[1].totalPricePaise).toBe(20000);
+
+    expect(result.items[2].name).toBe('MISAL PAV');
+    expect(result.items[2].quantity).toBe(1);
+    expect(result.items[2].totalPricePaise).toBe(7619);
+
+    expect(result.items[3].name).toBe('COLD DRINKS 200ML');
+    expect(result.items[3].quantity).toBe(1);
+    expect(result.items[3].totalPricePaise).toBe(2381);
+
+    expect(result.items[4].name).toBe('COLD DRINKS 500ML');
+    expect(result.items[4].quantity).toBe(1);
+    expect(result.items[4].totalPricePaise).toBe(4762);
+
+    expect(result.detectedSubtotalPaise).toBe(50000);
+    expect(result.detectedTotalPaise).toBe(52500);
+  });
+
+  // 9. Real-world US Fine Dining Bill (Boulevard San Francisco)
+  it('parses real-world Boulevard SF receipt with dinner course codes and wine fractions', () => {
+    const rawText = `
+BOULEVARD
+ONE MISSION STREET
+SAN FRANCISCO, CA 94105
+(415) 543-6084
+DINING ROOM
+1019 KEN
+Toi 64/1 Chk 9458 6st 2
+Feb15’06 07:20PM
+1 HENDRIKS 8.00
+1 BOURBON MANHATN 8.75
+1D SOUP. 13.75
+1D ABALONE 19.50
+1.0 LOBSTER LINGUT 18.75
+1D SHORTRIB 17.50
+1D SHEETBREADS 17.25
+10 LAMB 32.00
+10 PORK 31.00
+11/2 6L-3 SAINTS PN 5.50
+11/2 GL SAWY BLANC 4.25
+11/2 GL-BAROLO 9.75
+11/2 G- UNTT SYRAH 5.50
+1 POTRERD 10.50
+1 G-CASTELNAY 9.00
+1D BANANAS FOSTER 9.50
+10 TRIO 9.75
+SUBTOTAL 230.25
+Tax 19.57
+Total 249.32
+BOULEVARD COOKBOOKS ARE NOW AVAILABLE
+`;
+
+    const result = parseReceiptText(rawText, 'USD');
+
+    expect(result.restaurantName).toBe('BOULEVARD');
+    expect(result.items.length).toBe(17);
+
+    // Verify fine dining course code items had Qty 1 and clean names
+    const soup = result.items.find(it => it.name.includes('SOUP'));
+    expect(soup).toBeDefined();
+    expect(soup?.quantity).toBe(1);
+    expect(soup?.totalPricePaise).toBe(1375);
+
+    const lamb = result.items.find(it => it.name === 'LAMB');
+    expect(lamb).toBeDefined();
+    expect(lamb?.quantity).toBe(1);
+    expect(lamb?.totalPricePaise).toBe(3200);
+
+    // Verify wine glass fractions were parsed
+    const barolo = result.items.find(it => it.name.includes('BAROLO'));
+    expect(barolo).toBeDefined();
+    expect(barolo?.quantity).toBe(1);
+    expect(barolo?.totalPricePaise).toBe(975);
+
+    expect(result.detectedSubtotalPaise).toBe(23025);
+    expect(result.detectedTotalPaise).toBe(24932);
+    expect(result.detectedTaxes[0].name).toBe('TAX');
+  });
+
+  // 10. Real-world European / Swiss Alps Bill (Berghotel Grosse Scheidegg)
+  it('parses real-world Swiss restaurant receipt with attached quantities, à pricing, and MwSt', () => {
+    const rawText = `
+Berghotel
+Grosse Scheidegg
+3818 Grindelwald
+Familie R. Müller
+Rech. Nr. 4572 30.07.2007/13:29:17
+Bar Tisch 7/01
+2xLatte Macchiato à 4.50 CHF 9.00
+1xGloki à 5.00 CHF 5.00
+1xSchweinschnitzel à 22.00 CHF 22.00
+1xChässpätzli à 18.50 CHF 18.50
+Total : CHF 54.50
+Incl. 7.6% MwSt 54.50 CHF: 3.85
+`;
+
+    const result = parseReceiptText(rawText, 'CHF');
+
+    expect(result.restaurantName).toContain('Berghotel');
+    expect(result.items.length).toBe(4);
+
+    expect(result.items[0].name).toBe('Latte Macchiato');
+    expect(result.items[0].quantity).toBe(2);
+    expect(result.items[0].unitPricePaise).toBe(450);
+    expect(result.items[0].totalPricePaise).toBe(900);
+
+    expect(result.items[1].name).toBe('Gloki');
+    expect(result.items[1].quantity).toBe(1);
+    expect(result.items[1].totalPricePaise).toBe(500);
+
+    expect(result.items[2].name).toBe('Schweinschnitzel');
+    expect(result.items[2].quantity).toBe(1);
+    expect(result.items[2].totalPricePaise).toBe(2200);
+
+    expect(result.items[3].name).toBe('Chässpätzli');
+    expect(result.items[3].quantity).toBe(1);
+    expect(result.items[3].totalPricePaise).toBe(1850);
+
+    expect(result.detectedTotalPaise).toBe(5450);
+    expect(result.detectedTaxes[0].name).toBe('MWST');
+    expect(result.detectedTaxes[0].rate).toBe(7.6);
+  });
 });
+
