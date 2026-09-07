@@ -12,8 +12,8 @@ import {
   Sparkles,
   Download,
   RotateCcw,
-  MessageCircle,
 } from 'lucide-react';
+import { WhatsAppIcon } from '../components/icons/WhatsAppIcon';
 import { Bill, CalculatedBillResult, CurrencyCode, BillCategory, BILL_CATEGORIES } from '../types';
 import { formatMoney } from '../utils/currency';
 import { shareBillSummary, copyBillSummary, openWhatsAppShare } from '../features/export/shareService';
@@ -370,7 +370,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             aria-label="Share bill on WhatsApp"
             className="py-3.5 px-3 rounded-[20px] bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
           >
-            <MessageCircle className="w-4 h-4 fill-white" />
+            <WhatsAppIcon className="w-4 h-4 text-white shrink-0" />
             <span>WhatsApp</span>
           </button>
 

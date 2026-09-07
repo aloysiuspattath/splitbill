@@ -414,21 +414,23 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">
-                      {formatMoney(item.unitPricePaise, currency)}
-                      {item.quantity > 1 && <span className="text-brand-500 font-bold ml-1">x{item.quantity}</span>}
-                    </p>
-                    {item.quantity > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleSplitItem(item)}
-                        className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/60 dark:hover:bg-brand-900/60 text-brand-600 dark:text-brand-400 text-xs font-bold transition-all shadow-xs border border-brand-200/60 dark:border-brand-800/60"
-                        title={`Split ${item.name} into ${item.quantity} individual single items`}
-                      >
-                        <Scissors className="w-3.5 h-3.5" />
-                        <span>Split into {item.quantity} items (#1…#{item.quantity})</span>
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                        {formatMoney(item.unitPricePaise, currency)}
+                        {item.quantity > 1 && <span className="text-brand-500 font-bold ml-1">×{item.quantity}</span>}
+                      </p>
+                      {item.quantity > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleSplitItem(item)}
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/60 dark:hover:bg-brand-900/60 text-brand-600 dark:text-brand-400 text-[10px] font-extrabold transition-all border border-brand-200/60 dark:border-brand-800/60 active:scale-95 shadow-2xs"
+                          title={`Split ${item.name} into ${item.quantity} separate items`}
+                        >
+                          <Scissors className="w-3 h-3 stroke-[2.5]" />
+                          <span>Split into {item.quantity}</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -437,15 +439,6 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
                     </span>
 
                     <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                      {item.quantity > 1 && (
-                        <button
-                          onClick={() => handleSplitItem(item)}
-                          className="p-2 rounded-[12px] text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-[#1c1c1e] transition-colors"
-                          title={`Split into ${item.quantity} individual items`}
-                        >
-                          <Scissors className="w-4 h-4" />
-                        </button>
-                      )}
                       <button
                         onClick={() => handleStartEdit(item)}
                         className="p-2 rounded-[12px] text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-[#1c1c1e] transition-colors"

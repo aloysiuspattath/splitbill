@@ -259,21 +259,23 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
-                    {formatMoney(item.unitPricePaise, currency)}
-                    {item.quantity > 1 && ` • ${item.quantity}x`}
-                  </p>
-                  {item.quantity > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleSplitItem(item)}
-                      className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-xs border border-black/5 dark:border-white/5"
-                      title={`Split ${item.name} into ${item.quantity} individual single items`}
-                    >
-                      <Scissors className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
-                      <span>Split into {item.quantity} items (#1…#{item.quantity})</span>
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                      {formatMoney(item.unitPricePaise, currency)}
+                      {item.quantity > 1 && ` • ${item.quantity}x`}
+                    </p>
+                    {item.quantity > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleSplitItem(item)}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/60 dark:hover:bg-brand-900/60 text-brand-600 dark:text-brand-400 text-[10px] font-extrabold transition-all border border-brand-200/60 dark:border-brand-800/60 active:scale-95 shadow-2xs"
+                        title={`Split ${item.name} into ${item.quantity} separate items`}
+                      >
+                        <Scissors className="w-3 h-3 stroke-[2.5]" />
+                        <span>Split into {item.quantity}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="text-right">

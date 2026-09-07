@@ -22,6 +22,7 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
+import { WhatsAppIcon } from './icons/WhatsAppIcon';
 
 interface GroupShareModalProps {
   isOpen: boolean;
@@ -150,8 +151,8 @@ export const GroupShareModal: React.FC<GroupShareModalProps> = ({
               onClick={handleWhatsApp}
               className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 text-left hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all flex flex-col justify-between group active:scale-95"
             >
-              <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center mb-2 shadow-sm group-hover:scale-105 transition-transform">
-                <Send className="w-4 h-4" />
+              <div className="w-9 h-9 rounded-xl bg-[#25D366] text-white flex items-center justify-center mb-2 shadow-sm group-hover:scale-105 transition-transform">
+                <WhatsAppIcon className="w-4 h-4 text-white" />
               </div>
               <div>
                 <span className="font-extrabold text-xs text-slate-900 dark:text-white block">WhatsApp</span>
