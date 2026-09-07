@@ -363,14 +363,14 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
       {/* Action Buttons Grid */}
       <div className="space-y-3">
         {/* Primary Share Action Grid: WhatsApp, Copy, PDF, Image */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
           {/* WhatsApp Direct Share */}
           <button
             onClick={() => openWhatsAppShare(bill, result, false)}
             aria-label="Share bill on WhatsApp"
-            className="py-3.5 px-3 rounded-[20px] bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
+            className="py-2.5 px-1.5 sm:px-2 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 shadow-md active:scale-95 transition-all"
           >
-            <WhatsAppIcon className="w-4 h-4 text-white shrink-0" />
+            <WhatsAppIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0" />
             <span>WhatsApp</span>
           </button>
 
@@ -378,9 +378,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
           <button
             onClick={handleCopy}
             aria-label="Copy summary to clipboard"
-            className="py-3.5 px-3 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+            className="py-2.5 px-1.5 sm:px-2 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-[11px] sm:text-xs shadow-md flex items-center justify-center gap-1 sm:gap-1.5 active:scale-95 transition-all"
           >
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
             <span>{copied ? 'Copied!' : 'Copy'}</span>
           </button>
 
@@ -388,9 +388,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
           <button
             onClick={handleDownloadPdf}
             aria-label="Download itemized PDF"
-            className="py-3.5 px-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2c2c2e] font-extrabold text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
+            className="py-2.5 px-1.5 sm:px-2 rounded-2xl bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2c2c2e] font-bold text-[11px] sm:text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-1 sm:gap-1.5 shadow-sm active:scale-95 transition-all"
           >
-            <FileDown className="w-4 h-4 text-rose-500" />
+            <FileDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 shrink-0" />
             <span>PDF</span>
           </button>
 
@@ -399,9 +399,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             onClick={handleDownloadImage}
             disabled={isExportingImage}
             aria-label="Save receipt as PNG image"
-            className="py-3.5 px-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2c2c2e] font-extrabold text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
+            className="py-2.5 px-1.5 sm:px-2 rounded-2xl bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2c2c2e] font-bold text-[11px] sm:text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-1 sm:gap-1.5 shadow-sm active:scale-95 transition-all"
           >
-            <ImageIcon className="w-4 h-4 text-emerald-500" />
+            <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" />
             <span>{isExportingImage ? 'Exporting...' : 'Image'}</span>
           </button>
         </div>
@@ -409,7 +409,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
         {/* Generic Web Share API fallback */}
         <button
           onClick={handleShare}
-          className="w-full py-3 px-4 rounded-[20px] bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all"
+          className="w-full py-2.5 px-4 rounded-2xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all"
         >
           <Share2 className="w-4 h-4" />
           <span>More Share Options…</span>
