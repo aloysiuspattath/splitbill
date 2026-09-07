@@ -53,3 +53,35 @@ export function formatMoney(paise: number, currency: CurrencyCode = 'INR', showS
   if (!showSymbol) return formattedNumber;
   return `${config.symbol}${formattedNumber}`;
 }
+
+/**
+ * Format currency for PDF exports where standard Helvetica doesn't support Unicode glyphs like ₹ (U+20B9).
+ * Renders "Rs. 240.00" for INR so it doesn't corrupt into "¹ 240".
+ */
+export function formatMoneyPdf(paise: number, currency: CurrencyCode = 'INR'): string {
+  const formattedNumber = formatMoney(paise, currency, false);
+  if (currency === 'INR') {
+    return `Rs. ${formattedNumber}`;
+  }
+  if (currency === 'USD' || currency === 'CAD' || currency === 'AUD' || currency === 'SGD') {
+    return `$${formattedNumber}`;
+  }
+  if (currency === 'GBP') {
+    return `£${formattedNumber}`;
+  }
+  if (currency === 'EUR') {
+    return `€${formattedNumber}`;
+  }
+  if (currency === 'AED') {
+    return `AED ${formattedNumber}`;
+  }
+  if (currency === 'CHF') {
+    return `CHF ${formattedNumber}`;
+  }
+  if (currency === 'JPY') {
+    return `¥${formattedNumber}`;
+  }
+  const fallback = (CURRENCIES as Record<string, any>)[currency]?.code || currency || 'INR';
+  return `${fallback} ${formattedNumber}`;
+}
+

@@ -1,19 +1,23 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, Upload, PenLine, History, Sparkles, Shield, ArrowRight, Zap, RotateCcw } from 'lucide-react';
+import { Camera, Upload, PenLine, History, Sparkles, Shield, ArrowRight, Zap, RotateCcw, Users, BookOpen } from 'lucide-react';
 import { forceClearCacheAndReload } from '../utils/cacheManager';
 
 interface HomeScreenProps {
   onStartManual: () => void;
   onStartScan: (file: File) => void;
   onOpenRecent: () => void;
+  onOpenGroups: () => void;
   onLoadDemo: () => void;
+  onOpenInfo?: (tab: 'guide' | 'faq' | 'about' | 'terms' | 'privacy') => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   onStartManual,
   onStartScan,
   onOpenRecent,
+  onOpenGroups,
   onLoadDemo,
+  onOpenInfo,
 }) => {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
@@ -234,15 +238,37 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </button>
       </div>
 
-      {/* Secondary: Recent Bills */}
-      <button
-        onClick={onOpenRecent}
-        aria-label="View recent saved bills"
-        className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 mb-8 transition-colors"
-      >
-        <History className="w-4 h-4" />
-        <span>View Recent Bills</span>
-      </button>
+      {/* Secondary Actions */}
+      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-8">
+        <button
+          onClick={onOpenGroups}
+          aria-label="View groups and events"
+          className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+        >
+          <Users className="w-4 h-4" />
+          <span>Groups &amp; Trips</span>
+        </button>
+
+        <button
+          onClick={onOpenRecent}
+          aria-label="View recent saved bills"
+          className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+        >
+          <History className="w-4 h-4" />
+          <span>Recent Bills</span>
+        </button>
+
+        {onOpenInfo && (
+          <button
+            onClick={() => onOpenInfo('guide')}
+            aria-label="View user guide and FAQ"
+            className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+          >
+            <BookOpen className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+            <span>Guide &amp; FAQ</span>
+          </button>
+        )}
+      </div>
 
       {/* Privacy Guarantee Badges */}
       <div className="w-full pt-6 border-t border-slate-100 dark:border-transparent/80 flex flex-col items-center gap-1.5">

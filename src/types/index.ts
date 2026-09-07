@@ -54,6 +54,33 @@ export interface DiscountConfig {
   customAllocations?: Record<string, number>; // personId -> percentage or paise
 }
 
+export type BillCategory = 
+  | 'food' 
+  | 'bar' 
+  | 'transport' 
+  | 'hotel' 
+  | 'groceries' 
+  | 'entertainment' 
+  | 'shopping' 
+  | 'other';
+
+export interface CategoryInfo {
+  id: BillCategory;
+  label: string;
+  emoji: string;
+}
+
+export const BILL_CATEGORIES: CategoryInfo[] = [
+  { id: 'food', label: 'Food & Dining', emoji: '🍽️' },
+  { id: 'bar', label: 'Bar & Drinks', emoji: '🍸' },
+  { id: 'transport', label: 'Cab & Transit', emoji: '🚕' },
+  { id: 'hotel', label: 'Hotel & Stay', emoji: '🏨' },
+  { id: 'groceries', label: 'Groceries', emoji: '🛒' },
+  { id: 'entertainment', label: 'Activities & Events', emoji: '🎟️' },
+  { id: 'shopping', label: 'Shopping', emoji: '🛍️' },
+  { id: 'other', label: 'General / Other', emoji: '📦' },
+];
+
 export interface Bill {
   id: string;
   restaurantName: string;
@@ -65,6 +92,18 @@ export interface Bill {
   discount: DiscountConfig;
   customTipPaise?: number;
   isPermanent?: boolean;
+  groupId?: string; // If this bill belongs to a group
+  paidBy?: string; // personId of the person who paid the bill (defaults to the first person or unassigned if not set)
+  category?: BillCategory; // e.g. food, bar, transport...
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  currency: CurrencyCode;
+  members: Person[];
   createdAt: number;
   updatedAt: number;
 }

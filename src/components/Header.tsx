@@ -80,12 +80,12 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
-          {/* Privacy Info */}
+          {/* Privacy & Info */}
           <button
             onClick={onOpenPrivacy}
             className="p-2 rounded-[14px] text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors focus:outline-none flex-shrink-0"
-            title="Privacy & Storage Policy"
-            aria-label="Privacy and Storage Information"
+            title="Guide, FAQ & Privacy Policy"
+            aria-label="Guide, FAQ and Privacy Policy"
           >
             <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>

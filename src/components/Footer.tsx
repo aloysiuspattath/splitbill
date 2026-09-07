@@ -3,10 +3,19 @@ import { Github, Linkedin, Instagram, ShieldCheck, Heart } from 'lucide-react';
 
 interface FooterProps {
   onOpenPrivacy?: () => void;
+  onOpenInfo?: (tab: 'guide' | 'faq' | 'about' | 'terms' | 'privacy') => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => {
   const currentYear = new Date().getFullYear();
+
+  const handleOpenTab = (tab: 'guide' | 'faq' | 'about' | 'terms' | 'privacy') => {
+    if (onOpenInfo) {
+      onOpenInfo(tab);
+    } else if (onOpenPrivacy) {
+      onOpenPrivacy();
+    }
+  };
 
   return (
     <footer className="w-full mt-auto pt-10 pb-8 px-4 border-t border-slate-200/60 dark:border-slate-800/80 bg-slate-50/50 dark:bg-black/20 text-center transition-colors">
@@ -66,8 +75,49 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy }) => {
           </a>
         </div>
 
-        {/* Secondary Links & Privacy */}
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+        {/* Navigation & Documentation Links */}
+        <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+          <button
+            type="button"
+            onClick={() => handleOpenTab('guide')}
+            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+          >
+            Guide
+          </button>
+          <span>•</span>
+          <button
+            type="button"
+            onClick={() => handleOpenTab('faq')}
+            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+          >
+            FAQ
+          </button>
+          <span>•</span>
+          <button
+            type="button"
+            onClick={() => handleOpenTab('about')}
+            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+          >
+            About Us
+          </button>
+          <span>•</span>
+          <button
+            type="button"
+            onClick={() => handleOpenTab('terms')}
+            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+          >
+            Terms
+          </button>
+          <span>•</span>
+          <button
+            type="button"
+            onClick={() => handleOpenTab('privacy')}
+            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium inline-flex items-center gap-1 transition-colors"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Privacy</span>
+          </button>
+          <span>•</span>
           <a
             href="https://techfliq.com"
             target="_blank"
@@ -76,22 +126,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy }) => {
           >
             TechFliq
           </a>
-          <span>•</span>
-          {onOpenPrivacy ? (
-            <button
-              type="button"
-              onClick={onOpenPrivacy}
-              className="hover:text-brand-600 dark:hover:text-brand-400 font-medium inline-flex items-center gap-1 transition-colors"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Privacy Guarantee</span>
-            </button>
-          ) : (
-            <span className="inline-flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>100% Client-Side</span>
-            </span>
-          )}
         </div>
 
         {/* Copyright */}

@@ -1,5 +1,5 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { Bill } from '../../types';
+import { Bill, Group } from '../../types';
 
 interface SplitBillDB extends DBSchema {
   bills: {
@@ -9,12 +9,20 @@ interface SplitBillDB extends DBSchema {
       'by-created': number;
       'by-updated': number;
       'by-permanent': number;
+      'by-group': string;
+    };
+  };
+  groups: {
+    key: string;
+    value: Group;
+    indexes: {
+      'by-updated': number;
     };
   };
 }
 
 const DB_NAME = 'splitbill_local_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const EXPIRY_DAYS = 7;
 const EXPIRY_MS = EXPIRY_DAYS * 24 * 60 * 60 * 1000;
 
@@ -23,12 +31,23 @@ let dbPromise: Promise<IDBPDatabase<SplitBillDB>> | null = null;
 export function getDB(): Promise<IDBPDatabase<SplitBillDB>> {
   if (!dbPromise) {
     dbPromise = openDB<SplitBillDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('bills')) {
+      upgrade(db, oldVersion, _, tx) {
+        if (oldVersion < 1 || !db.objectStoreNames.contains('bills')) {
           const store = db.createObjectStore('bills', { keyPath: 'id' });
           store.createIndex('by-created', 'createdAt');
           store.createIndex('by-updated', 'updatedAt');
           store.createIndex('by-permanent', 'isPermanent');
+        }
+        if (oldVersion < 2) {
+          if (!db.objectStoreNames.contains('groups')) {
+            const groupStore = db.createObjectStore('groups', { keyPath: 'id' });
+            groupStore.createIndex('by-updated', 'updatedAt');
+          }
+          // Add by-group index to existing bills store if not exists
+          const billStore = tx.objectStore('bills');
+          if (!billStore.indexNames.contains('by-group')) {
+            billStore.createIndex('by-group', 'groupId');
+          }
         }
       },
     });
@@ -110,4 +129,60 @@ export async function toggleKeepPermanently(id: string): Promise<boolean> {
   bill.updatedAt = Date.now();
   await db.put('bills', bill);
   return !!bill.isPermanent;
+}
+
+/**
+ * Retrieve all bills for a specific group.
+ */
+export async function getGroupBills(groupId: string): Promise<Bill[]> {
+  const db = await getDB();
+  const bills = await db.getAllFromIndex('bills', 'by-group', groupId);
+  // Sort descending by updated
+  return bills.sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+/**
+ * Save or update a group.
+ */
+export async function saveGroup(group: Group): Promise<void> {
+  const db = await getDB();
+  const updatedGroup: Group = {
+    ...group,
+    updatedAt: Date.now(),
+  };
+  await db.put('groups', updatedGroup);
+}
+
+/**
+ * Get a group by ID.
+ */
+export async function getGroup(id: string): Promise<Group | undefined> {
+  const db = await getDB();
+  return db.get('groups', id);
+}
+
+/**
+ * List all groups, sorted by recently updated.
+ */
+export async function listGroups(): Promise<Group[]> {
+  const db = await getDB();
+  const groups = await db.getAllFromIndex('groups', 'by-updated');
+  return groups.reverse();
+}
+
+/**
+ * Delete a group and all its bills.
+ */
+export async function deleteGroup(id: string): Promise<void> {
+  const db = await getDB();
+  
+  // Delete all bills in this group
+  const bills = await db.getAllFromIndex('bills', 'by-group', id);
+  const tx = db.transaction(['groups', 'bills'], 'readwrite');
+  await tx.objectStore('groups').delete(id);
+  const billStore = tx.objectStore('bills');
+  for (const bill of bills) {
+    await billStore.delete(bill.id);
+  }
+  await tx.done;
 }

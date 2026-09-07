@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Edit3, ArrowRight, Store, Calendar, Check, AlertCircle, Scissors } from 'lucide-react';
-import { BillItem, CurrencyCode } from '../types';
+import { BillItem, CurrencyCode, BillCategory, BILL_CATEGORIES, Person } from '../types';
 import { formatMoney, toPaise, fromPaise } from '../utils/currency';
 
 interface ReviewReceiptStepProps {
@@ -11,6 +11,13 @@ interface ReviewReceiptStepProps {
   currency: CurrencyCode;
   items: BillItem[];
   onUpdateItems: (items: BillItem[]) => void;
+  category?: BillCategory;
+  onUpdateCategory?: (category: BillCategory) => void;
+  people?: Person[];
+  paidBy?: string;
+  onUpdatePaidBy?: (personId: string) => void;
+  groupName?: string;
+  onQuickSaveToGroup?: () => void;
   onContinue: () => void;
   onBack: () => void;
   ocrNotice?: string;
@@ -24,6 +31,13 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
   currency,
   items,
   onUpdateItems,
+  category,
+  onUpdateCategory,
+  people,
+  paidBy,
+  onUpdatePaidBy,
+  groupName,
+  onQuickSaveToGroup,
   onContinue,
   onBack,
   ocrNotice,
@@ -123,10 +137,33 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
 
   return (
     <div className="max-w-md mx-auto px-4 py-4 space-y-5">
+      {/* Group Trip Banner */}
+      {groupName && (
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-700 text-white flex items-center justify-between gap-3 shadow-md animate-fadeIn">
+          <div className="min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-wider text-brand-200 block">
+              Group Trip Bill
+            </span>
+            <p className="text-sm font-extrabold truncate">
+              {groupName} • {people?.length || 0} members
+            </p>
+          </div>
+          {onQuickSaveToGroup && items.length > 0 && (
+            <button
+              onClick={onQuickSaveToGroup}
+              className="px-3 py-1.5 rounded-xl bg-white text-brand-600 font-black text-xs shadow-sm hover:bg-brand-50 active:scale-95 transition-all flex items-center gap-1 shrink-0"
+            >
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <span>Split Equally & Add</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Step Header */}
       <div>
         <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest block mb-1">
-          Step 1 of 4
+          {groupName ? `Step 1 of 4 • ${groupName}` : 'Step 1 of 4'}
         </span>
         <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
           Your Receipt
@@ -171,6 +208,55 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
               className="bg-transparent border-none text-[11px] font-bold focus:outline-none cursor-pointer uppercase tracking-wider"
             />
           </div>
+        </div>
+
+        {/* Category & Payer Selection */}
+        <div className="pb-4 mb-4 border-b border-dashed border-black/5 dark:border-white/5 space-y-3">
+          <div>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2 text-center">
+              Category
+            </span>
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              {BILL_CATEGORIES.map(cat => {
+                const isSelected = (category || 'food') === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => onUpdateCategory?.(cat.id)}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold transition-all border ${
+                      isSelected
+                        ? 'bg-brand-50 dark:bg-brand-900/30 border-brand-500 text-brand-600 dark:text-brand-400 ring-1 ring-brand-500 shadow-sm'
+                        : 'bg-slate-50 dark:bg-[#2c2c2e] border-slate-100 dark:border-slate-800 text-slate-500 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span>{cat.emoji}</span>
+                    <span>{cat.label.split('&')[0].trim()}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Who Paid (if people provided) */}
+          {people && people.length > 0 && onUpdatePaidBy && (
+            <div className="bg-slate-50 dark:bg-[#2c2c2e]/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/80">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                  Who paid this bill?
+                </span>
+                <select
+                  value={paidBy || people[0]?.id || ''}
+                  onChange={e => onUpdatePaidBy(e.target.value)}
+                  className="bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
+                >
+                  {people.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Section Heading */}
@@ -392,22 +478,38 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
       </div>
 
       {/* Bottom Sticky Action Buttons */}
-      <div className="pt-2 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="px-5 py-4 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 font-bold text-sm border border-black/5 dark:border-transparent hover:bg-slate-50 dark:hover:bg-[#2c2c2e] transition-colors"
-        >
-          Back
-        </button>
+      <div className="pt-2 flex flex-col gap-2.5">
+        {groupName && onQuickSaveToGroup && items.length > 0 && (
+          <button
+            onClick={onQuickSaveToGroup}
+            className="w-full py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-sm shadow-[0_8px_20px_rgb(37,99,235,0.3)] flex items-center justify-center gap-2 active:scale-95 transition-all"
+          >
+            <Check className="w-5 h-5 stroke-[2.5]" />
+            <span>Split Equally & Add to {groupName}</span>
+          </button>
+        )}
 
-        <button
-          disabled={items.length === 0}
-          onClick={onContinue}
-          className="flex-1 py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold text-sm shadow-[0_8px_16px_rgb(37,99,235,0.25)] flex items-center justify-center gap-2 active:scale-95 transition-all"
-        >
-          <span>Continue to Friends</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="px-5 py-3.5 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm border border-black/5 dark:border-transparent hover:bg-slate-50 dark:hover:bg-[#2c2c2e] transition-colors"
+          >
+            {groupName ? 'Cancel' : 'Back'}
+          </button>
+
+          <button
+            disabled={items.length === 0}
+            onClick={onContinue}
+            className={`flex-1 py-3.5 px-6 rounded-[20px] font-bold text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95 transition-all ${
+              groupName && onQuickSaveToGroup
+                ? 'bg-slate-100 dark:bg-[#2c2c2e] hover:bg-slate-200 dark:hover:bg-[#38383a] text-slate-800 dark:text-slate-200'
+                : 'bg-brand-600 hover:bg-brand-700 text-white shadow-[0_8px_16px_rgb(37,99,235,0.25)]'
+            }`}
+          >
+            <span>{groupName ? 'Customize Item Splits' : 'Continue to Friends'}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

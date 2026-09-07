@@ -1,10 +1,13 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { Bill, CalculatedBillResult } from './types';
+import { Bill, CalculatedBillResult, Group } from './types';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { StepIndicator } from './components/StepIndicator';
 import { HomeScreen } from './pages/HomeScreen';
 import { OcrLoadingModal } from './components/OcrLoadingModal';
+import { CreateGroupModal } from './components/CreateGroupModal';
+import { GroupsModal } from './components/GroupsModal';
+import { GroupDashboard } from './pages/GroupDashboard';
 import { createDemoBill } from './utils/demoBill';
 import { calculateBill } from './features/calculation/engine';
 import { recognizeReceipt, OcrProgress } from './features/receipt/ocrService';
@@ -13,6 +16,10 @@ import {
   listRecentBills,
   deleteBill,
   toggleKeepPermanently,
+  saveGroup,
+  listGroups,
+  deleteGroup,
+  getGroupBills
 } from './features/storage/db';
 
 const ReviewReceiptStep = lazy(() =>
@@ -33,9 +40,10 @@ const ResultScreen = lazy(() =>
 const RecentBillsModal = lazy(() =>
   import('./components/RecentBillsModal').then(m => ({ default: m.RecentBillsModal }))
 );
-const PrivacyModal = lazy(() =>
-  import('./components/PrivacyModal').then(m => ({ default: m.PrivacyModal }))
+const InfoModal = lazy(() =>
+  import('./components/InfoModal').then(m => ({ default: m.InfoModal }))
 );
+import type { InfoTabType } from './components/InfoModal';
 
 const EMPTY_BILL: Bill = {
   id: `bill-${Date.now()}`,
@@ -46,6 +54,7 @@ const EMPTY_BILL: Bill = {
   people: [],
   taxes: [],
   discount: { type: 'none', allocationMethod: 'proportional' },
+  category: 'food',
   isPermanent: false,
   createdAt: Date.now(),
   updatedAt: Date.now(),
@@ -82,7 +91,56 @@ export function App() {
 
   const [recentBills, setRecentBills] = useState<Bill[]>([]);
   const [isRecentOpen, setIsRecentOpen] = useState(false);
-  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [infoTab, setInfoTab] = useState<InfoTabType>('guide');
+
+  const openInfoModal = (tab: InfoTabType = 'guide') => {
+    setInfoTab(tab);
+    setIsInfoOpen(true);
+  };
+
+  // Sync browser URL hash with Info tabs (#guide, #faq, #about, #terms, #privacy)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (['#guide', '#faq', '#about', '#terms', '#privacy'].includes(hash)) {
+        const tab = hash.slice(1) as InfoTabType;
+        setInfoTab(tab);
+        setIsInfoOpen(true);
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Groups State
+  const [appMode, setAppMode] = useState<'home' | 'bill' | 'group'>('home');
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [activeGroup, setActiveGroup] = useState<Group | null>(null);
+  const [groupBills, setGroupBills] = useState<Bill[]>([]);
+  const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false);
+  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+
+  const refreshGroups = async () => {
+    try {
+      const g = await listGroups();
+      setGroups(g);
+    } catch(e) { console.warn(e); }
+  };
+  
+  const refreshGroupBills = async (groupId: string) => {
+    try {
+      const b = await getGroupBills(groupId);
+      setGroupBills(b);
+    } catch(e) { console.warn(e); }
+  };
+
+  useEffect(() => {
+    refreshGroups();
+  }, []);
+
 
   // Load recent bills on startup
   const refreshRecentBills = async () => {
@@ -108,34 +166,46 @@ export function App() {
   };
 
   // 1. Start Manual Bill
-  const handleStartManual = () => {
+  const handleStartManual = (groupId?: string, people?: typeof EMPTY_BILL.people) => {
+    const cur = (groupId && activeGroup) ? activeGroup.currency : bill.currency;
     setBill({
       ...EMPTY_BILL,
+      groupId,
+      people: people || [],
+      paidBy: people?.[0]?.id,
+      category: 'food',
       id: `bill-${Date.now()}`,
-      currency: bill.currency,
+      currency: cur,
       date: new Date().toISOString().split('T')[0],
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
     setOcrNotice(undefined);
+    setAppMode('bill');
     goToStep(1);
   };
 
   // 2. Start OCR Receipt Scan
-  const handleStartScan = async (file: File) => {
+  const handleStartScan = async (file: File, groupId?: string, people?: typeof EMPTY_BILL.people) => {
     setIsOcrLoading(true);
     setOcrPreviewUrl(URL.createObjectURL(file));
     setOcrNotice(undefined);
 
+    const cur = (groupId && activeGroup) ? activeGroup.currency : bill.currency;
+
     try {
-      const parsed = await recognizeReceipt(file, bill.currency, prog => {
+      const parsed = await recognizeReceipt(file, cur, prog => {
         setOcrProgress(prog);
       });
 
       const newBill: Bill = {
         ...EMPTY_BILL,
+        groupId,
+        people: people || [],
+        paidBy: people?.[0]?.id,
+        category: 'food',
         id: `bill-${Date.now()}`,
-        currency: bill.currency,
+        currency: cur,
         restaurantName: parsed.restaurantName || '',
         date: new Date().toISOString().split('T')[0],
         items: parsed.items,
@@ -158,12 +228,13 @@ export function App() {
         );
       }
       setIsOcrLoading(false);
+      setAppMode('bill');
       goToStep(1);
     } catch (err: any) {
       console.error('Receipt scan error:', err);
       setIsOcrLoading(false);
       alert(err.message || 'OCR failed. Starting manual entry.');
-      handleStartManual();
+      handleStartManual(groupId, people);
     }
   };
 
@@ -172,8 +243,36 @@ export function App() {
     const demo = createDemoBill();
     setBill(demo);
     setOcrNotice(undefined);
+    setAppMode('bill');
     setMaxAccessibleStep(5);
     goToStep(5); // Jump straight to Result for immediate preview!
+  };
+
+  // Quick Save Group Bill (splits all items equally among all group members)
+  const handleQuickSaveGroupBill = async () => {
+    if (!activeGroup) return;
+    const memberIds = activeGroup.members.map(m => m.id);
+    const updatedItems = bill.items.map(item => ({
+      ...item,
+      assignedPersonIds: memberIds,
+      assignments: memberIds.map(id => ({ personId: id, mode: 'equal' as const })),
+    }));
+
+    const billToSave: Bill = {
+      ...bill,
+      items: updatedItems,
+      people: activeGroup.members,
+      groupId: activeGroup.id,
+      paidBy: bill.paidBy || activeGroup.members[0]?.id,
+      isPermanent: true,
+      updatedAt: Date.now(),
+    };
+
+    await saveBill(billToSave);
+    await refreshGroupBills(activeGroup.id);
+    await refreshRecentBills();
+    setAppMode('group');
+    setStep(0);
   };
 
   // Save Bill to IndexedDB
@@ -186,6 +285,14 @@ export function App() {
     await saveBill(billToSave);
     setBill(billToSave);
     await refreshRecentBills();
+    if (billToSave.groupId) {
+      await refreshGroupBills(billToSave.groupId);
+      setAppMode('group');
+      setStep(0);
+    } else {
+      setAppMode('home');
+      setStep(0);
+    }
   };
 
   // Calculation Result
@@ -199,17 +306,25 @@ export function App() {
         onCurrencyChange={c => setBill(prev => ({ ...prev, currency: c }))}
         isDark={isDark}
         onToggleDark={() => setIsDark(!isDark)}
-        onOpenPrivacy={() => setIsPrivacyOpen(true)}
+        onOpenPrivacy={() => openInfoModal('privacy')}
         onOpenRecent={() => {
           refreshRecentBills();
           setIsRecentOpen(true);
         }}
-        onGoHome={() => setStep(0)}
+        onGoHome={() => {
+          if (bill.groupId && activeGroup && appMode === 'bill') {
+            setAppMode('group');
+            setStep(0);
+          } else {
+            setAppMode('home');
+            setStep(0);
+          }
+        }}
         savedBillsCount={recentBills.length}
       />
 
-      {/* Step Indicator (shown during workflow steps 1 through 5) */}
-      {step > 0 && (
+      {/* Step Indicator */}
+      {appMode === 'bill' && step > 0 && (
         <StepIndicator
           currentStep={step}
           onStepClick={s => goToStep(s)}
@@ -218,18 +333,38 @@ export function App() {
       )}
 
       {/* Main Screen Content */}
+
       <main className="flex-1 pb-12">
-        {step === 0 && (
-          <HomeScreen
-            onStartManual={handleStartManual}
-            onStartScan={handleStartScan}
-            onOpenRecent={() => {
-              refreshRecentBills();
-              setIsRecentOpen(true);
+        {appMode === 'group' && activeGroup ? (
+          <GroupDashboard
+            group={activeGroup}
+            bills={groupBills}
+            onAddExpenseManual={() => handleStartManual(activeGroup.id, activeGroup.members)}
+            onScanExpense={(file) => handleStartScan(file, activeGroup.id, activeGroup.members)}
+            onQuickAddExpense={async (newBill) => {
+              await saveBill(newBill);
+              await refreshGroupBills(activeGroup.id);
             }}
-            onLoadDemo={handleLoadDemo}
+            onEditExpense={(b) => { setBill(b); setAppMode('bill'); goToStep(1); }}
+            onDeleteExpense={async (billId) => {
+              await deleteBill(billId);
+              await refreshGroupBills(activeGroup.id);
+            }}
+            onBack={() => setAppMode('home')}
           />
-        )}
+        ) : appMode === 'home' || appMode === 'bill' ? (
+          <>
+            {step === 0 && appMode === 'home' && (
+              <HomeScreen
+                onStartManual={() => handleStartManual()}
+                onStartScan={(f) => handleStartScan(f)}
+                onOpenRecent={() => { refreshRecentBills(); setIsRecentOpen(true); }}
+                onOpenGroups={() => { refreshGroups(); setIsGroupsModalOpen(true); }}
+                onLoadDemo={handleLoadDemo}
+                onOpenInfo={openInfoModal}
+              />
+            )}
+
 
         <Suspense
           fallback={
@@ -248,8 +383,22 @@ export function App() {
               currency={bill.currency}
               items={bill.items}
               onUpdateItems={items => setBill(prev => ({ ...prev, items }))}
+              category={bill.category}
+              onUpdateCategory={cat => setBill(prev => ({ ...prev, category: cat }))}
+              people={bill.people}
+              paidBy={bill.paidBy}
+              onUpdatePaidBy={paidBy => setBill(prev => ({ ...prev, paidBy }))}
+              groupName={bill.groupId && activeGroup ? activeGroup.name : undefined}
+              onQuickSaveToGroup={bill.groupId ? handleQuickSaveGroupBill : undefined}
               onContinue={() => goToStep(2)}
-              onBack={() => setStep(0)}
+              onBack={() => {
+                if (bill.groupId) {
+                  setAppMode('group');
+                  setStep(0);
+                } else {
+                  setStep(0);
+                }
+              }}
               ocrNotice={ocrNotice}
             />
           )}
@@ -293,8 +442,19 @@ export function App() {
               bill={bill}
               result={calculationResult}
               currency={bill.currency}
+              onUpdateCategory={cat => setBill(prev => ({ ...prev, category: cat }))}
+              onUpdatePaidBy={paidBy => setBill(prev => ({ ...prev, paidBy }))}
+              groupName={bill.groupId && activeGroup ? activeGroup.name : undefined}
               onSaveBill={handleSaveBill}
-              onStartNewBill={handleStartManual}
+              onStartNewBill={() => {
+                if (bill.groupId && activeGroup) {
+                  setAppMode('group');
+                  setStep(0);
+                } else {
+                  setAppMode('home');
+                  setStep(0);
+                }
+              }}
               onEditBill={() => goToStep(1)}
             />
           )}
@@ -307,7 +467,8 @@ export function App() {
               onClose={() => setIsRecentOpen(false)}
               onOpenBill={opened => {
                 setBill(opened);
-                setMaxAccessibleStep(5);
+                setAppMode('bill');
+    setMaxAccessibleStep(5);
                 goToStep(5);
               }}
               onDeleteBill={async id => {
@@ -320,22 +481,74 @@ export function App() {
               }}
               onImportBill={imported => {
                 setBill(imported);
-                setMaxAccessibleStep(5);
+                setAppMode('bill');
+    setMaxAccessibleStep(5);
                 goToStep(5);
                 saveBill(imported).then(refreshRecentBills);
               }}
             />
           )}
 
-          {/* Privacy Policy Modal */}
-          {isPrivacyOpen && (
-            <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
+          {/* Information & Documentation Modal (Guide, FAQ, About, Terms, Privacy) */}
+          {isInfoOpen && (
+            <InfoModal
+              isOpen={isInfoOpen}
+              onClose={() => setIsInfoOpen(false)}
+              initialTab={infoTab}
+            />
           )}
         </Suspense>
+                </>
+        ) : null}
       </main>
 
+
+      {/* Group Modals */}
+      <GroupsModal
+        isOpen={isGroupsModalOpen}
+        groups={groups}
+        onClose={() => setIsGroupsModalOpen(false)}
+        onCreateNew={() => { setIsGroupsModalOpen(false); setIsCreateGroupOpen(true); }}
+        onOpenGroup={async (g) => {
+          setActiveGroup(g);
+          await refreshGroupBills(g.id);
+          setAppMode('group');
+          setIsGroupsModalOpen(false);
+        }}
+        onDeleteGroup={async (id) => {
+          await deleteGroup(id);
+          await refreshGroups();
+        }}
+        onImportTrip={async ({ group, bills }) => {
+          await saveGroup(group);
+          for (const b of bills) {
+            await saveBill(b);
+          }
+          await refreshGroups();
+          setActiveGroup(group);
+          setGroupBills(bills);
+          setAppMode('group');
+          setIsGroupsModalOpen(false);
+        }}
+      />
+      <CreateGroupModal
+        isOpen={isCreateGroupOpen}
+        onClose={() => setIsCreateGroupOpen(false)}
+        onCreate={async (g) => {
+          await saveGroup(g);
+          await refreshGroups();
+          setIsCreateGroupOpen(false);
+          setActiveGroup(g);
+          setGroupBills([]);
+          setAppMode('group');
+        }}
+      />
+
       {/* App Footer */}
-      <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
+      <Footer 
+        onOpenPrivacy={() => openInfoModal('privacy')} 
+        onOpenInfo={openInfoModal} 
+      />
 
       {/* OCR Progress Modal */}
       {isOcrLoading && (
