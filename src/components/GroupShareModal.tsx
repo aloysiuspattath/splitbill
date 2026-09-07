@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Group, Bill } from '../types';
 import { formatMoney } from '../utils/currency';
 import { calculateSettleUp } from '../features/calculation/settleUp';
+import { calculateBill } from '../features/calculation/engine';
 import { 
   generateGroupShareText, 
   openWhatsApp, 
@@ -47,7 +48,7 @@ export const GroupShareModal: React.FC<GroupShareModalProps> = ({
   if (!isOpen) return null;
 
   const totalGroupSpentPaise = bills.reduce((sum, b) => {
-    return sum + b.items.reduce((itemSum, item) => itemSum + item.totalPricePaise, 0);
+    return sum + calculateBill(b).effectiveBillTotalPaise;
   }, 0);
 
   const transactions = calculateSettleUp(bills);

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { X, Trash2, Pin, PinOff, ExternalLink, Upload, FileText } from 'lucide-react';
 import { Bill } from '../types';
 import { formatMoney } from '../utils/currency';
+import { calculateBill } from '../features/calculation/engine';
 import { validateAndSanitizeBillJson } from '../features/export/jsonTransfer';
 
 interface RecentBillsModalProps {
@@ -113,7 +114,7 @@ export const RecentBillsModal: React.FC<RecentBillsModalProps> = ({
             </div>
           ) : (
             bills.map(bill => {
-              const subtotal = bill.items.reduce((sum, it) => sum + it.totalPricePaise, 0);
+              const total = calculateBill(bill).effectiveBillTotalPaise;
               const expiry = getExpiryDetails(bill);
 
               return (
@@ -136,7 +137,7 @@ export const RecentBillsModal: React.FC<RecentBillsModalProps> = ({
 
                     <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
                       <span className="font-extrabold text-slate-800 dark:text-slate-200">
-                        {formatMoney(subtotal, bill.currency)}
+                        {formatMoney(total, bill.currency)}
                       </span>
                       <span>•</span>
                       <span className={expiry.isExpiringSoon ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-500'}>

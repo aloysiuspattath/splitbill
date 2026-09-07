@@ -160,5 +160,66 @@ describe('Group Settle Up Logic', () => {
     expect(detailed['u2'].totalSharePaise).toBe(3500);
     expect(detailed['u2'].netPaise).toBe(-1500);
   });
+
+  test('correctly accounts for taxes and tips in group settle up and balances', async () => {
+    const { calculateBalances, calculateSettleUp, calculateDetailedBalances, calculateCategoryTotals } = await import('./settleUp');
+    const { calculateBill } = await import('./engine');
+
+    const people = [
+      { id: 'p1', name: 'Alice', avatar: '', color: '' },
+      { id: 'p2', name: 'Bob', avatar: '', color: '' },
+    ];
+
+    // Dinner bill: Items = ₹1,000 (100000 paise). Tax = 5% (₹50 = 5000 paise). Tip = ₹100 (10000 paise).
+    // Total effective bill = ₹1,150 (115000 paise).
+    // Alice and Bob split food equally (₹500 each + ₹25 tax + ₹50 tip = ₹575 each).
+    // Alice paid the whole bill (₹1,150).
+    const dinnerBill: Bill = {
+      ...createDemoBill(),
+      id: 'dinner-1',
+      category: 'food',
+      paidBy: 'p1',
+      people,
+      items: [
+        {
+          id: 'dish-1',
+          name: 'Steak & Salad',
+          quantity: 1,
+          unitPricePaise: 100000,
+          totalPricePaise: 100000,
+          assignedPersonIds: ['p1', 'p2'],
+          assignments: [{ personId: 'p1', mode: 'equal' }, { personId: 'p2', mode: 'equal' }],
+        },
+      ],
+      taxes: [{ id: 'tax-1', name: 'GST', type: 'percentage', rate: 5 }],
+      discount: { type: 'none', allocationMethod: 'proportional' },
+      customTipPaise: 10000,
+    };
+
+    const calc = calculateBill(dinnerBill);
+    expect(calc.effectiveBillTotalPaise).toBe(115000);
+
+    const balances = calculateBalances([dinnerBill]);
+    // Alice paid 115000, her share is 57500 -> Net = +57500
+    // Bob paid 0, his share is 57500 -> Net = -57500
+    expect(balances['p1']).toBe(57500);
+    expect(balances['p2']).toBe(-57500);
+
+    const tx = calculateSettleUp([dinnerBill]);
+    expect(tx).toHaveLength(1);
+    expect(tx[0]).toEqual({
+      fromPersonId: 'p2',
+      toPersonId: 'p1',
+      amountPaise: 57500,
+    });
+
+    const detailed = calculateDetailedBalances([dinnerBill]);
+    expect(detailed['p1'].totalPaidPaise).toBe(115000);
+    expect(detailed['p1'].totalSharePaise).toBe(57500);
+    expect(detailed['p1'].netPaise).toBe(57500);
+
+    const catTotals = calculateCategoryTotals([dinnerBill]);
+    expect(catTotals.food).toBe(115000);
+  });
 });
 

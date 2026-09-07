@@ -84,6 +84,7 @@ export const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({
       ],
       taxes: [],
       discount: { type: 'none', allocationMethod: 'proportional' },
+      isPermanent: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };

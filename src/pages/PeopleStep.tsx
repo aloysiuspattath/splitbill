@@ -86,6 +86,22 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
     p => !people.some(existing => existing.name.toLowerCase() === p.toLowerCase())
   );
 
+  const handleContinue = () => {
+    const cleanName = nameInput.trim();
+    if (cleanName && !people.some(p => p.name.toLowerCase() === cleanName.toLowerCase())) {
+      const { avatar: defAvatar, color: defColor } = getRandomAvatar(people.length);
+      const newPerson: Person = {
+        id: `p-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        name: cleanName,
+        avatar: selectedEmoji || defAvatar,
+        color: selectedColor || defColor,
+      };
+      onUpdatePeople([...people, newPerson]);
+      setNameInput('');
+    }
+    onContinue();
+  };
+
   return (
     <div className="max-w-md mx-auto px-4 py-4 space-y-5">
       {/* Step Header */}
@@ -283,8 +299,8 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
         </button>
 
         <button
-          disabled={people.length === 0}
-          onClick={onContinue}
+          disabled={people.length === 0 && !nameInput.trim()}
+          onClick={handleContinue}
           className="flex-1 py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold text-sm shadow-[0_8px_16px_rgb(37,99,235,0.25)] flex items-center justify-center gap-2 active:scale-95 transition-all"
         >
           <span>Continue to Item Assignment</span>

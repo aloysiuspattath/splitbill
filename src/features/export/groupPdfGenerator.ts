@@ -1,6 +1,7 @@
 import { Group, Bill, BILL_CATEGORIES } from '../../types';
 import { formatMoneyPdf } from '../../utils/currency';
 import { calculateDetailedBalances, calculateSettleUp } from '../calculation/settleUp';
+import { calculateBill } from '../calculation/engine';
 
 export async function generateGroupPdf(group: Group, bills: Bill[]): Promise<void> {
   const [{ default: jsPDF }, autoTableModule] = await Promise.all([
@@ -21,7 +22,7 @@ export async function generateGroupPdf(group: Group, bills: Bill[]): Promise<voi
   const transactions = calculateSettleUp(bills);
 
   const totalGroupSpentPaise = bills.reduce((sum, b) => {
-    return sum + b.items.reduce((itemSum, item) => itemSum + item.totalPricePaise, 0);
+    return sum + calculateBill(b).effectiveBillTotalPaise;
   }, 0);
 
   // 1. Header Banner
@@ -147,7 +148,7 @@ export async function generateGroupPdf(group: Group, bills: Bill[]): Promise<voi
   const billRows = bills.map(bill => {
     const payer = group.members.find(m => m.id === bill.paidBy)?.name || 'Someone';
     const cat = BILL_CATEGORIES.find(c => c.id === (bill.category || 'other'))?.label || 'General';
-    const billTotal = bill.items.reduce((sum, item) => sum + item.totalPricePaise, 0);
+    const billTotal = calculateBill(bill).effectiveBillTotalPaise;
     return [
       bill.date || '-',
       cat,

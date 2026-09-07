@@ -48,11 +48,24 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
       return;
     }
     
+    let finalMembers = [...members];
+    if (newMemberName.trim()) {
+      const cleanNew = newMemberName.trim();
+      if (!finalMembers.some(m => m.name.toLowerCase() === cleanNew.toLowerCase())) {
+        finalMembers.push({
+          id: `p-${Date.now()}`,
+          name: cleanNew,
+          avatar: DEFAULT_AVATARS[finalMembers.length % DEFAULT_AVATARS.length],
+          color: DEFAULT_COLORS[finalMembers.length % DEFAULT_COLORS.length],
+        });
+      }
+    }
+
     const newGroup: Group = {
       id: `group-${Date.now()}`,
       name: name.trim(),
       currency,
-      members,
+      members: finalMembers,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -60,6 +73,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
     onCreate(newGroup);
     // Reset state for next time
     setName('');
+    setNewMemberName('');
     setMembers([{ id: `p-${Date.now()}-1`, name: 'Me', avatar: '😎', color: 'bg-brand-500' }]);
   };
 

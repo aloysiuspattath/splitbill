@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Group, Bill, BILL_CATEGORIES, BillCategory } from '../types';
 import { calculateSettleUp, calculateDetailedBalances, calculateCategoryTotals } from '../features/calculation/settleUp';
+import { calculateBill } from '../features/calculation/engine';
 import { 
   ArrowLeft, 
   Plus, 
@@ -55,7 +56,7 @@ export const GroupDashboard: React.FC<GroupDashboardProps> = ({
   const transactions = calculateSettleUp(bills);
   
   const totalGroupSpentPaise = bills.reduce((sum, b) => {
-    return sum + b.items.reduce((itemSum, item) => itemSum + item.totalPricePaise, 0);
+    return sum + calculateBill(b).effectiveBillTotalPaise;
   }, 0);
 
   // Filter bills by category if selected
@@ -252,7 +253,7 @@ export const GroupDashboard: React.FC<GroupDashboardProps> = ({
               filteredBills.map(bill => {
                 const payer = group.members.find(m => m.id === bill.paidBy) || group.members[0];
                 const catInfo = BILL_CATEGORIES.find(c => c.id === (bill.category || 'other')) || BILL_CATEGORIES[0];
-                const billTotal = bill.items.reduce((sum, item) => sum + item.totalPricePaise, 0);
+                const billTotal = calculateBill(bill).effectiveBillTotalPaise;
 
                 return (
                   <div

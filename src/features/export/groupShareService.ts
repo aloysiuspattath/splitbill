@@ -1,6 +1,7 @@
 import { Group, Bill, BILL_CATEGORIES } from '../../types';
 import { formatMoney } from '../../utils/currency';
 import { calculateDetailedBalances, calculateCategoryTotals, calculateSettleUp } from '../calculation/settleUp';
+import { calculateBill } from '../calculation/engine';
 
 export interface GroupShareOptions {
   includeBillsList?: boolean;
@@ -28,7 +29,7 @@ export function generateGroupShareText(
   const transactions = calculateSettleUp(bills);
   
   const totalGroupSpentPaise = bills.reduce((sum, b) => {
-    return sum + b.items.reduce((itemSum, item) => itemSum + item.totalPricePaise, 0);
+    return sum + calculateBill(b).effectiveBillTotalPaise;
   }, 0);
 
   const lines: string[] = [];
@@ -117,7 +118,7 @@ export function generateGroupShareText(
     bills.forEach(bill => {
       const payer = group.members.find(m => m.id === bill.paidBy) || group.members[0];
       const cat = BILL_CATEGORIES.find(c => c.id === (bill.category || 'other'));
-      const billTotal = bill.items.reduce((sum, item) => sum + item.totalPricePaise, 0);
+      const billTotal = calculateBill(bill).effectiveBillTotalPaise;
       lines.push(`${cat?.emoji || '🧾'} ${bill.restaurantName || 'Bill'} — ${formatMoney(billTotal, bill.currency)} (Paid by ${payer?.name || 'Someone'})`);
     });
   }
@@ -133,8 +134,8 @@ export function generateGroupShareText(
  */
 export function openWhatsApp(text: string): void {
   const encodedText = encodeURIComponent(text);
-  const url = `https://api.whatsapp.com/send?text=${encodedText}`;
-  window.open(url, '_blank');
+  const url = `https://wa.me/?text=${encodedText}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 /**
