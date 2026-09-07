@@ -119,6 +119,15 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           </button>
           <span>•</span>
           <a
+            href="/sitemap.xml"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+          >
+            Sitemap
+          </a>
+          <span>•</span>
+          <a
             href="https://techfliq.com"
             target="_blank"
             rel="noopener noreferrer"
