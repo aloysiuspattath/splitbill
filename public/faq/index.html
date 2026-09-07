@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>SplitBill FAQ — Frequently Asked Questions</title>
+    <meta name="description" content="Frequently asked questions about SplitBill: free bill splitting, privacy, local OCR scanning, 0 rounding error math, and group trip expense management." />
+    <link rel="canonical" href="https://splitbill.techfliq.com/faq" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/receipt-icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:title" content="SplitBill FAQ — Frequently Asked Questions" />
+    <meta property="og:description" content="Answers to common questions about free bill splitting, offline receipt OCR, exact paise math, and trip group settlements." />
+    <meta property="og:url" content="https://splitbill.techfliq.com/faq" />
+    <meta property="og:image" content="https://splitbill.techfliq.com/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      if (typeof window !== 'undefined' && !/bot|crawl|slurp|spider/i.test(navigator.userAgent)) {
+        window.location.replace('/#faq');
+      }
+    </script>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; background: #f8fafc; margin: 0; padding: 24px 16px; }
+      .container { max-width: 680px; margin: 0 auto; background: #ffffff; padding: 32px 24px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+      h1 { color: #0f172a; font-size: 24px; margin-top: 0; }
+      .btn { display: inline-block; background: #2563eb; color: #ffffff; text-decoration: none; font-weight: 700; padding: 12px 24px; border-radius: 14px; margin: 16px 0; }
+      .faq-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 16px; margin-bottom: 14px; }
+      .q { font-weight: 700; color: #0f172a; margin-bottom: 6px; font-size: 15px; }
+      .a { font-size: 14px; color: #475569; }
+      footer { margin-top: 32px; font-size: 12px; color: #64748b; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>❓ Frequently Asked Questions</h1>
+      <p>Everything you need to know about splitting bills, privacy, and trip expenses with SplitBill.</p>
+      
+      <a href="/#faq" class="btn">🚀 Open in SplitBill App</a>
+
+      <div class="faq-card">
+        <div class="q">Is SplitBill completely free? Are there subscriptions or ads?</div>
+        <div class="a">Yes, SplitBill is 100% free forever with zero ads, zero in-app purchases, and no premium tiers.</div>
+      </div>
+
+      <div class="faq-card">
+        <div class="q">Do my friends need to install an app or create an account?</div>
+        <div class="a">No! Friends do not need to install anything or sign up. You can share breakdowns via WhatsApp text, copy for Telegram/SMS, or export a PDF or receipt image.</div>
+      </div>
+
+      <div class="faq-card">
+        <div class="q">Where is my data stored? Are receipt photos uploaded to a server?</div>
+        <div class="a">Your data stays strictly on your device. OCR runs locally in your browser using WebAssembly. No photos, names, or financial numbers are ever uploaded.</div>
+      </div>
+
+      <div class="faq-card">
+        <div class="q">How does SplitBill eliminate 1-paisa / 1-cent rounding errors?</div>
+        <div class="a">We use integer math in smallest currency units (paise/cents) and distribute odd remainders using the Largest Remainder (Hare-Niemeyer) algorithm so individual shares always equal the grand total with 0 discrepancy.</div>
+      </div>
+
+      <div class="faq-card">
+        <div class="q">Can I split a dish by portions (e.g. 0.5 portion)?</div>
+        <div class="a">Yes! Switch to Portion/Shares mode on any item to enter fractional portions like 0.5, 1, or 2 portions.</div>
+      </div>
+
+      <div class="faq-card">
+        <div class="q">How are taxes, service charges, discounts, and tips calculated?</div>
+        <div class="a">Taxes and discounts are allocated PROPORTIONALLY according to each person's consumed subtotal. Non-drinkers don't subsidize taxes on expensive wine.</div>
+      </div>
+
+      <div class="faq-card">
+        <div class="q">How does "Settle Up" work in Group Trips?</div>
+        <div class="a">Our greedy debt minimization algorithm simplifies complex webs of debt into the absolute fewest payments needed to settle everyone to zero.</div>
+      </div>
+
+      <div class="faq-card">
+        <div class="q">Does SplitBill work without internet?</div>
+        <div class="a">Yes! SplitBill is an offline-first Progressive Web App (PWA). All scripts and OCR models are cached on your phone for offline use on flights and road trips.</div>
+      </div>
+
+      <footer>
+        <p>© 2026 SplitBill • <a href="https://splitbill.techfliq.com/">Home</a> • <a href="/guide">Guide</a> • <a href="/about">About</a> • <a href="/terms">Terms</a> • <a href="/privacy">Privacy</a></p>
+      </footer>
+    </div>
+  </body>
+</html>
