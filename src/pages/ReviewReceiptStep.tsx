@@ -135,6 +135,16 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
     setIsAddingItem(false);
   };
 
+  const isItemSuspicious = (item: BillItem) => {
+    if (item.unitPricePaise <= 0) return true;
+    if (!item.name || item.name.trim().length <= 1) return true;
+    if (/^[\d\W_]+$/.test(item.name.trim())) return true;
+    return false;
+  };
+
+  const suspiciousItems = items.filter(isItemSuspicious);
+  const suspiciousCount = suspiciousItems.length;
+
   return (
     <div className="max-w-md mx-auto px-4 py-4 space-y-5">
       {/* Group Trip Banner */}
@@ -173,11 +183,57 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
         </p>
       </div>
 
-      {/* OCR confidence notice if any */}
-      {ocrNotice && (
-        <div className="p-3.5 rounded-[20px] bg-amber-50 dark:bg-[#2c2c2e] border border-amber-200/50 dark:border-transparent flex items-start gap-3 text-xs text-amber-800 dark:text-amber-400 shadow-sm">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-          <span className="font-medium leading-relaxed">{ocrNotice}</span>
+      {/* Intelligent Scan Confidence Summary */}
+      {(ocrNotice || suspiciousCount > 0) && (
+        <div className="p-4 rounded-[24px] bg-slate-50 dark:bg-[#222225] border border-slate-200/80 dark:border-slate-800 space-y-2.5 shadow-sm text-xs">
+          <div className="flex items-center justify-between">
+            <span className="font-extrabold uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">
+              Receipt Scan Summary
+            </span>
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+              Scan Complete
+            </span>
+          </div>
+
+          <div className="space-y-1.5 text-slate-700 dark:text-slate-300">
+            <div className="flex items-center gap-2">
+              {restaurantName ? (
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  <span>Restaurant: <strong className="text-slate-900 dark:text-white">{restaurantName}</strong></span>
+                </span>
+              ) : (
+                <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>Restaurant name not detected (type above)</span>
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <span>{items.length} {items.length === 1 ? 'item' : 'items'} detected</span>
+              </span>
+            </div>
+
+            {suspiciousCount > 0 ? (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-300 font-bold mt-1">
+                <div className="flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 text-amber-600" />
+                  <span>{suspiciousCount} {suspiciousCount === 1 ? 'item needs' : 'items need'} checking</span>
+                </div>
+                <span className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                  Highlighted below
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <span>All items have valid prices and names</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -336,15 +392,28 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
                 );
               }
 
+              const isSuspicious = isItemSuspicious(item);
+
               return (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between group p-3.5 bg-white dark:bg-[#2c2c2e] hover:bg-slate-50 dark:hover:bg-[#3c3c3e] rounded-[20px] shadow-sm border border-black/5 dark:border-transparent transition-all"
+                  className={`flex items-center justify-between group p-3.5 rounded-[20px] shadow-sm transition-all ${
+                    isSuspicious
+                      ? 'bg-amber-50/70 dark:bg-amber-950/30 border-2 border-amber-300/80 dark:border-amber-700/70'
+                      : 'bg-white dark:bg-[#2c2c2e] hover:bg-slate-50 dark:hover:bg-[#3c3c3e] border border-black/5 dark:border-transparent'
+                  }`}
                 >
                   <div className="flex-1 min-w-0 pr-3">
-                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
-                      {item.name}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                        {item.name}
+                      </p>
+                      {isSuspicious && (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200 shrink-0">
+                          ⚠️ Check
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">
                       {formatMoney(item.unitPricePaise, currency)}
                       {item.quantity > 1 && <span className="text-brand-500 font-bold ml-1">x{item.quantity}</span>}
@@ -353,11 +422,11 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
                       <button
                         type="button"
                         onClick={() => handleSplitItem(item)}
-                        className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/60 dark:hover:bg-brand-900/60 text-brand-600 dark:text-brand-400 text-[10px] font-bold transition-colors shadow-2xs"
-                        title={`Split ${item.name} into ${item.quantity} individual items`}
+                        className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/60 dark:hover:bg-brand-900/60 text-brand-600 dark:text-brand-400 text-xs font-bold transition-all shadow-xs border border-brand-200/60 dark:border-brand-800/60"
+                        title={`Split ${item.name} into ${item.quantity} individual single items`}
                       >
-                        <Scissors className="w-3 h-3" />
-                        <span>Split into {item.quantity} items</span>
+                        <Scissors className="w-3.5 h-3.5" />
+                        <span>Split into {item.quantity} items (#1…#{item.quantity})</span>
                       </button>
                     )}
                   </div>

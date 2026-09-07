@@ -12,10 +12,11 @@ import {
   Sparkles,
   Download,
   RotateCcw,
+  MessageCircle,
 } from 'lucide-react';
 import { Bill, CalculatedBillResult, CurrencyCode, BillCategory, BILL_CATEGORIES } from '../types';
 import { formatMoney } from '../utils/currency';
-import { shareBillSummary, copyBillSummary } from '../features/export/shareService';
+import { shareBillSummary, copyBillSummary, openWhatsAppShare } from '../features/export/shareService';
 import { generateBillPdf } from '../features/export/pdfGenerator';
 import { downloadElementAsImage } from '../features/export/imageExporter';
 import { exportBillToJson } from '../features/export/jsonTransfer';
@@ -361,44 +362,58 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
       {/* Action Buttons Grid */}
       <div className="space-y-3">
-        {/* Primary Share & Copy Buttons */}
-        <div className="grid grid-cols-2 gap-2.5">
+        {/* Primary Share Action Grid: WhatsApp, Copy, PDF, Image */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* WhatsApp Direct Share */}
+          <button
+            onClick={() => openWhatsAppShare(bill, result, false)}
+            aria-label="Share bill on WhatsApp"
+            className="py-3.5 px-3 rounded-[20px] bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
+          >
+            <MessageCircle className="w-4 h-4 fill-white" />
+            <span>WhatsApp</span>
+          </button>
+
+          {/* Copy Summary */}
           <button
             onClick={handleCopy}
-            className="py-3.5 px-4 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm shadow-[0_8px_16px_rgb(37,99,235,0.25)] flex items-center justify-center gap-2 active:scale-95 transition-all"
+            aria-label="Copy summary to clipboard"
+            className="py-3.5 px-3 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all"
           >
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            <span>{copied ? 'Copied Summary!' : 'Copy Summary'}</span>
+            <span>{copied ? 'Copied!' : 'Copy'}</span>
           </button>
 
-          <button
-            onClick={handleShare}
-            className="py-3.5 px-4 rounded-[20px] bg-slate-900 dark:bg-slate-750 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all"
-          >
-            <Share2 className="w-4 h-4" />
-            <span>Share Bill</span>
-          </button>
-        </div>
-
-        {/* Secondary Actions: PDF & Image */}
-        <div className="grid grid-cols-2 gap-2.5">
+          {/* Download PDF */}
           <button
             onClick={handleDownloadPdf}
-            className="py-3 px-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 font-bold text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-2 shadow-sm transition-colors"
+            aria-label="Download itemized PDF"
+            className="py-3.5 px-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2c2c2e] font-extrabold text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
           >
             <FileDown className="w-4 h-4 text-rose-500" />
-            <span>Download PDF</span>
+            <span>PDF</span>
           </button>
 
+          {/* Save Image */}
           <button
             onClick={handleDownloadImage}
             disabled={isExportingImage}
-            className="py-3 px-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 font-bold text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-2 shadow-sm transition-colors"
+            aria-label="Save receipt as PNG image"
+            className="py-3.5 px-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2c2c2e] font-extrabold text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
           >
             <ImageIcon className="w-4 h-4 text-emerald-500" />
-            <span>{isExportingImage ? 'Exporting...' : 'Save as Image'}</span>
+            <span>{isExportingImage ? 'Exporting...' : 'Image'}</span>
           </button>
         </div>
+
+        {/* Generic Web Share API fallback */}
+        <button
+          onClick={handleShare}
+          className="w-full py-3 px-4 rounded-[20px] bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all"
+        >
+          <Share2 className="w-4 h-4" />
+          <span>More Share Options…</span>
+        </button>
 
         {/* Local Storage & Permanent Pinning Card */}
         <div className="p-4 rounded-[32px] bg-white dark:bg-[#1c1c1e] border border-black/5 dark:border-transparent space-y-3 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">

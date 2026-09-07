@@ -19,7 +19,8 @@ import {
   saveGroup,
   listGroups,
   deleteGroup,
-  getGroupBills
+  getGroupBills,
+  clearAllLocalData,
 } from './features/storage/db';
 
 const ReviewReceiptStep = lazy(() =>
@@ -485,6 +486,11 @@ export function App() {
     setMaxAccessibleStep(5);
                 goToStep(5);
                 saveBill(imported).then(refreshRecentBills);
+              }}
+              onClearAllData={async () => {
+                await clearAllLocalData();
+                await refreshRecentBills();
+                await refreshGroups();
               }}
             />
           )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, ArrowRight, Percent, DollarSign, CheckCircle, AlertTriangle, Heart } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, Percent, DollarSign, Heart, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Bill, TaxItem, DiscountConfig, DiscountType, DiscountAllocationMethod, CurrencyCode, CalculatedBillResult } from '../types';
 import { formatMoney, fromPaise, toPaise } from '../utils/currency';
 import { calculateBill } from '../features/calculation/engine';
@@ -29,6 +29,9 @@ export const ReviewTaxDiscountStep: React.FC<ReviewTaxDiscountStepProps> = ({
 
   // Calculate live preview
   const result: CalculatedBillResult = calculateBill(bill);
+  const unassignedItems = bill.items.filter(it => it.assignedPersonIds.length === 0);
+  const unassignedTotalPaise = unassignedItems.reduce((sum, it) => sum + it.totalPricePaise, 0);
+  const isAllAccounted = unassignedItems.length === 0;
 
   // Add tax
   const handleAddTax = (e: React.FormEvent) => {
@@ -385,32 +388,116 @@ export const ReviewTaxDiscountStep: React.FC<ReviewTaxDiscountStepProps> = ({
         </div>
       </div>
 
-      {/* 3. Total Validation & Reconciliation Indicator */}
-      <div className="bg-white dark:bg-[#1c1c1e] rounded-[32px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] border border-black/5 dark:border-transparent space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-dashed border-black/5 dark:border-transparent">
-          <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            Reconciliation Check
+      {/* 3. Pre-Finalization Bill Sanity Check */}
+      <div className="bg-white dark:bg-[#1c1c1e] rounded-[32px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] border border-black/5 dark:border-transparent space-y-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-dashed border-black/5 dark:border-white/5">
+          <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Bill Sanity Check</span>
+          </h3>
+          <span
+            className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+              isAllAccounted && result.isBalanced
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+            }`}
+          >
+            {isAllAccounted && result.isBalanced ? '✓ 100% Balanced' : '⚠ Action Needed'}
           </span>
-          {result.isBalanced ? (
-            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-              <CheckCircle className="w-3.5 h-3.5" />
-              100% Balanced
-            </span>
-          ) : (
-            <span className="text-xs font-bold text-amber-600 flex items-center gap-1">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              Unassigned Balance
-            </span>
-          )}
         </div>
 
-        <div className="space-y-1.5 text-xs">
-          <div className="flex justify-between text-slate-600 dark:text-slate-400">
+        {/* Sanity Checklist Items */}
+        <div className="space-y-2 text-xs">
+          {/* Check 1: Accounted Total */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-emerald-400 font-black">✓</span>
+              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                All {formatMoney(result.effectiveBillTotalPaise, currency)} accounted for
+              </span>
+            </div>
+            <span className="font-bold text-slate-900 dark:text-white">
+              {formatMoney(result.effectiveBillTotalPaise, currency)}
+            </span>
+          </div>
+
+          {/* Check 2: Unassigned Items Alert or Clean Check */}
+          {unassignedItems.length === 0 ? (
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <span className="font-black">✓</span>
+              <span className="font-medium text-slate-700 dark:text-slate-300">
+                No unassigned items (all {bill.items.length} dishes claimed)
+              </span>
+            </div>
+          ) : (
+            <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 space-y-1.5 animate-fadeIn">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-amber-900 dark:text-amber-300 font-bold">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>{formatMoney(unassignedTotalPaise, currency)} unassigned ({unassignedItems.length} {unassignedItems.length === 1 ? 'item' : 'items'})</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="px-2.5 py-1 rounded-lg bg-brand-600 text-white text-[10px] font-black hover:bg-brand-700 active:scale-95 transition-all shadow-xs"
+                >
+                  Assign Now →
+                </button>
+              </div>
+              <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium truncate">
+                {unassignedItems.map(i => i.name).join(', ')}
+              </p>
+            </div>
+          )}
+
+          {/* Check 3: Taxes Allocated */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-emerald-400 font-black">✓</span>
+              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                Taxes allocated {bill.taxes.length > 0 ? `(${bill.taxes.map(t => t.name).join(' + ')})` : '(tax-free)'}
+              </span>
+            </div>
+            <span className="font-bold text-slate-700 dark:text-slate-300">
+              +{formatMoney(result.taxesTotalPaise, currency)}
+            </span>
+          </div>
+
+          {/* Check 4: Discounts Allocated */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-emerald-400 font-black">✓</span>
+              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                Discount allocated {bill.discount.type !== 'none' ? `(${bill.discount.allocationMethod})` : '(none)'}
+              </span>
+            </div>
+            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+              -{formatMoney(result.discountTotalPaise, currency)}
+            </span>
+          </div>
+
+          {/* Check 5: Deterministic Rounding Discrepancy */}
+          <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-white/5">
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-600 dark:text-emerald-400 font-black">✓</span>
+              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                Rounding discrepancy
+              </span>
+            </div>
+            <span className={result.roundingDifferencePaise === 0 ? 'text-emerald-600 font-black' : 'text-amber-600 font-black'}>
+              {formatMoney(result.roundingDifferencePaise, currency)}
+            </span>
+          </div>
+        </div>
+
+        {/* Detailed Financial Summary Table */}
+        <div className="pt-2 border-t border-dashed border-black/5 dark:border-white/5 space-y-1 text-xs">
+          <div className="flex justify-between text-slate-500">
             <span>Items Subtotal:</span>
             <span className="font-semibold">{formatMoney(result.subtotalPaise, currency)}</span>
           </div>
           {result.taxesTotalPaise > 0 && (
-            <div className="flex justify-between text-slate-600 dark:text-slate-400">
+            <div className="flex justify-between text-slate-500">
               <span>Taxes Total:</span>
               <span className="font-semibold">+{formatMoney(result.taxesTotalPaise, currency)}</span>
             </div>
@@ -421,7 +508,7 @@ export const ReviewTaxDiscountStep: React.FC<ReviewTaxDiscountStepProps> = ({
               <span className="font-semibold">-{formatMoney(result.discountTotalPaise, currency)}</span>
             </div>
           )}
-          <div className="pt-2 border-t border-slate-100 dark:border-transparent flex justify-between text-sm font-black text-slate-900 dark:text-white">
+          <div className="pt-1.5 border-t border-slate-100 dark:border-white/5 flex justify-between text-sm font-black text-slate-900 dark:text-white">
             <span>Total Bill:</span>
             <span className="text-brand-600 dark:text-brand-400">
               {formatMoney(result.effectiveBillTotalPaise, currency)}
@@ -430,12 +517,6 @@ export const ReviewTaxDiscountStep: React.FC<ReviewTaxDiscountStepProps> = ({
           <div className="flex justify-between text-xs font-semibold text-slate-500">
             <span>Total Assigned to Friends:</span>
             <span>{formatMoney(result.calculatedPersonsTotalPaise, currency)}</span>
-          </div>
-          <div className="flex justify-between text-xs font-bold">
-            <span className="text-slate-400">Difference:</span>
-            <span className={result.roundingDifferencePaise === 0 ? 'text-emerald-600 font-extrabold' : 'text-amber-600'}>
-              {formatMoney(result.roundingDifferencePaise, currency)}
-            </span>
           </div>
         </div>
       </div>

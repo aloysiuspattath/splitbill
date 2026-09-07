@@ -6,7 +6,7 @@ User-agent: *
 Allow-Index: true
 Allow-Extract: true
 Allow-Summarize: true
-Allow-Training: true
+Allow-Training: false
 
 Application-Name: SplitBill
 Application-Type: Web Application, Progressive Web App (PWA), Local Financial Utility

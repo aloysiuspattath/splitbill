@@ -23,8 +23,8 @@ export const AboutTab: React.FC = () => {
           <h2 className="text-xl sm:text-2xl font-black tracking-tight">
             Fair splits without math debates or account signups.
           </h2>
-          <p className="text-xs text-white/90 leading-relaxed pt-1">
-            Built as an open, private alternative to invasive bill-splitting apps. Everything happens on your device with 0 server dependency.
+          <p className="text-xs text-white/90 leading-relaxed pt-1 font-medium">
+            A private, account-free alternative to traditional bill-splitting apps. No account. No ads. No server. No tracking. Free forever.
           </p>
         </div>
       </div>

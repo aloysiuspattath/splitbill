@@ -186,3 +186,22 @@ export async function deleteGroup(id: string): Promise<void> {
   }
   await tx.done;
 }
+
+/**
+ * Completely clears all local data from IndexedDB and storage.
+ */
+export async function clearAllLocalData(): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction(['groups', 'bills'], 'readwrite');
+  await tx.objectStore('groups').clear();
+  await tx.objectStore('bills').clear();
+  await tx.done;
+
+  try {
+    localStorage.clear();
+    sessionStorage.clear();
+  } catch (err) {
+    console.warn('Storage clear error:', err);
+  }
+}
+

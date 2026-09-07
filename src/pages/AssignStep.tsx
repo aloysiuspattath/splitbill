@@ -250,7 +250,7 @@ export const AssignStep: React.FC<AssignStepProps> = ({
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 pr-2">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-snug">
                       {item.name}
                     </h3>
                     {assignedCount === 0 && (
@@ -259,7 +259,7 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
                     {formatMoney(item.unitPricePaise, currency)}
                     {item.quantity > 1 && ` • ${item.quantity}x`}
                   </p>
@@ -267,11 +267,11 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                     <button
                       type="button"
                       onClick={() => handleSplitItem(item)}
-                      className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-bold transition-all shadow-2xs border border-black/5 dark:border-white/5"
+                      className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-xs border border-black/5 dark:border-white/5"
                       title={`Split ${item.name} into ${item.quantity} individual single items`}
                     >
                       <Scissors className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
-                      <span>Split into {item.quantity} items</span>
+                      <span>Split into {item.quantity} items (#1…#{item.quantity})</span>
                     </button>
                   )}
                 </div>
@@ -281,7 +281,7 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                     {formatMoney(item.totalPricePaise, currency)}
                   </span>
                   {assignedCount > 1 && (
-                    <span className="block text-[11px] font-medium text-brand-600 dark:text-brand-400">
+                    <span className="block text-[11px] font-bold text-brand-600 dark:text-brand-400">
                       {currentMode === 'equal'
                         ? `~${formatMoney(Math.round(item.totalPricePaise / assignedCount), currency)} each`
                         : currentMode === 'shares'
@@ -292,12 +292,67 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                 </div>
               </div>
 
-              {/* Friend Avatar Selection Pills */}
+              {/* "Who had this?" Dominant Interaction */}
               <div className="pt-1">
-                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
-                  Select Who Shared This:
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <span>Who had this?</span>
+                    {assignedCount === 0 && (
+                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 lowercase font-sans">
+                        (tap friends below)
+                      </span>
+                    )}
+                  </span>
 
+                  {/* Quick per-item selectors */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allIds = people.map(p => p.id);
+                        const updated = items.map(it => {
+                          if (it.id === item.id) {
+                            return {
+                              ...it,
+                              assignedPersonIds: allIds,
+                              assignments: allIds.map(pid => ({ personId: pid, mode: currentMode as SplitMode })),
+                            };
+                          }
+                          return it;
+                        });
+                        onUpdateItems(updated);
+                      }}
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#2c2c2e] dark:hover:bg-[#3c3c3e] text-slate-700 dark:text-slate-300 transition-colors"
+                      title="Assign this item to everyone"
+                    >
+                      All
+                    </button>
+                    {assignedCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = items.map(it => {
+                            if (it.id === item.id) {
+                              return {
+                                ...it,
+                                assignedPersonIds: [],
+                                assignments: [],
+                              };
+                            }
+                            return it;
+                          });
+                          onUpdateItems(updated);
+                        }}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 transition-colors"
+                        title="Clear selection for this item"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Friend Avatar Selection Pills */}
                 <div className="flex flex-wrap gap-2">
                   {people.map(person => {
                     const isSelected = item.assignedPersonIds.includes(person.id);
@@ -320,6 +375,44 @@ export const AssignStep: React.FC<AssignStepProps> = ({
                     );
                   })}
                 </div>
+
+                {/* Live Instant Cost Breakdown under item */}
+                {assignedCount > 0 && (
+                  <div className="mt-2.5 p-2.5 rounded-2xl bg-slate-50 dark:bg-black/20 border border-black/5 dark:border-white/5">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                        Live Split:
+                      </span>
+                      {item.assignedPersonIds.map(pid => {
+                        const person = people.find(p => p.id === pid);
+                        if (!person) return null;
+
+                        let sharePaise = 0;
+                        if (currentMode === 'equal') {
+                          sharePaise = Math.round(item.totalPricePaise / assignedCount);
+                        } else if (currentMode === 'shares') {
+                          const asgn = item.assignments?.find(a => a.personId === pid);
+                          const shares = asgn?.value !== undefined ? asgn.value : 1;
+                          const totalShares = item.assignments?.reduce((sum, a) => sum + (a.value || 0), 0) || 1;
+                          sharePaise = Math.round((item.totalPricePaise * shares) / totalShares);
+                        } else if (currentMode === 'percentage') {
+                          const asgn = item.assignments?.find(a => a.personId === pid);
+                          const pct = asgn?.value !== undefined ? asgn.value : 0;
+                          sharePaise = Math.round((item.totalPricePaise * pct) / 100);
+                        } else if (currentMode === 'amount') {
+                          const asgn = item.assignments?.find(a => a.personId === pid);
+                          sharePaise = asgn?.value || 0;
+                        }
+
+                        return (
+                          <span key={pid} className="font-semibold text-slate-700 dark:text-slate-200">
+                            {person.name}: <strong className="text-brand-600 dark:text-brand-400 font-extrabold">{formatMoney(sharePaise, currency)}</strong>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Split Mode Selector (appears if 2+ people selected) */}

@@ -84,3 +84,17 @@ export async function copyBillSummary(
     return { method: 'clipboard', success: false };
   }
 }
+
+/**
+ * Direct WhatsApp sharing with URL-encoded text.
+ */
+export function openWhatsAppShare(
+  bill: Bill,
+  result: CalculatedBillResult,
+  includeItemized: boolean = false
+): void {
+  const text = generateShareText(bill, result, includeItemized);
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
