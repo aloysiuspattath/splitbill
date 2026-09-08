@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShieldCheck, Moon, Sun, History, Receipt } from 'lucide-react';
 import { CurrencyCode } from '../types';
-import { CURRENCIES } from '../utils/currency';
+import { CurrencyDropdown } from './CurrencyDropdown';
 
 interface HeaderProps {
   currency: CurrencyCode;
@@ -46,26 +46,13 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Action Controls (Responsive & Compact) */}
         <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
           
-          {/* Currency Dropdown */}
-          <div className="relative flex items-center bg-slate-100 dark:bg-[#1c1c1e] hover:bg-slate-200 dark:hover:bg-[#2c2c2e] rounded-[14px] px-2 py-1.5 mr-0.5 sm:mr-1 transition-colors">
-            <select
-              value={currency}
-              onChange={e => onCurrencyChange(e.target.value as CurrencyCode)}
-              className="text-[11px] font-bold bg-transparent text-slate-700 dark:text-slate-200 border-none outline-none cursor-pointer appearance-none pr-4"
-              title="Select Currency"
-              aria-label="Select Currency"
-            >
-              {Object.values(CURRENCIES).map(curr => (
-                <option key={curr.code} value={curr.code} className="bg-white dark:bg-[#1c1c1e]">
-                  {curr.symbol} {curr.code}
-                </option>
-              ))}
-            </select>
-            {/* Custom dropdown arrow */}
-            <div className="absolute right-2 pointer-events-none text-slate-400">
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            </div>
-          </div>
+          {/* Custom iOS-style Currency Dropdown */}
+          <CurrencyDropdown
+            value={currency}
+            onChange={onCurrencyChange}
+            variant="compact"
+            className="mr-0.5 sm:mr-1"
+          />
 
           {/* History Icon */}
           <button

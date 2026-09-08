@@ -14,6 +14,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { WhatsAppIcon } from '../components/icons/WhatsAppIcon';
+import { PersonSelect } from '../components/PersonSelect';
 import { Bill, CalculatedBillResult, CurrencyCode, BillCategory, BILL_CATEGORIES } from '../types';
 import { formatMoney } from '../utils/currency';
 import { shareBillSummary, copyBillSummary, openWhatsAppShare } from '../features/export/shareService';
@@ -203,19 +204,16 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             )}
 
             {onUpdatePaidBy && (
-              <div>
-                <label className="text-xs font-bold text-brand-700 dark:text-brand-300 uppercase tracking-wider block mb-1.5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-brand-700 dark:text-brand-300 uppercase tracking-wider block">
                   Who paid the bill?
                 </label>
-                <select
-                  value={bill.paidBy || bill.people[0]?.id || ''}
-                  onChange={(e) => onUpdatePaidBy(e.target.value)}
-                  className="w-full bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white px-4 py-2.5 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-brand-500 transition-all border border-slate-200 dark:border-slate-700 cursor-pointer"
-                >
-                  {bill.people.map(person => (
-                    <option key={person.id} value={person.id}>{person.name}</option>
-                  ))}
-                </select>
+                <PersonSelect
+                  people={bill.people}
+                  selectedPersonId={bill.paidBy || bill.people[0]?.id}
+                  onSelect={onUpdatePaidBy}
+                  variant="full"
+                />
               </div>
             )}
           </div>

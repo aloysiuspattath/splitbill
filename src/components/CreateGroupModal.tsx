@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CurrencyCode, Group, Person } from '../types';
-import { CURRENCIES } from '../utils/currency';
 import { X, Plus, Trash2, Users } from 'lucide-react';
+import { CurrencyDropdown } from './CurrencyDropdown';
 
 interface CreateGroupModalProps {
   isOpen: boolean;
@@ -109,19 +109,13 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
             />
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Currency</label>
-            <div className="relative">
-              <select
-                value={currency}
-                onChange={e => setCurrency(e.target.value as CurrencyCode)}
-                className="w-full bg-slate-100 dark:bg-[#2c2c2e] text-slate-900 dark:text-white px-4 py-3.5 rounded-2xl font-semibold outline-none focus:ring-2 focus:ring-brand-500 transition-all appearance-none"
-              >
-                {Object.values(CURRENCIES).map(c => (
-                  <option key={c.code} value={c.code}>{c.symbol} {c.code} - {c.name}</option>
-                ))}
-              </select>
-            </div>
+            <CurrencyDropdown
+              value={currency}
+              onChange={setCurrency}
+              variant="form"
+            />
           </div>
 
           <div className="space-y-3">

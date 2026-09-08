@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, X, UserPlus, ArrowRight, AlertTriangle } from 'lucide-react';
 import { Person, BillItem } from '../types';
 import { getRandomAvatar, AVATAR_EMOJIS, AVATAR_COLORS } from '../features/people/avatarHelper';
+import { EmojiPicker } from '../components/EmojiPicker';
 
 interface PeopleStepProps {
   people: Person[];
@@ -197,19 +198,12 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
             Add a Friend
           </span>
           {/* Emoji selector preview */}
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-slate-400">Avatar:</span>
-            <select
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-400 font-medium">Avatar:</span>
+            <EmojiPicker
               value={selectedEmoji}
-              onChange={e => setSelectedEmoji(e.target.value)}
-              className="bg-slate-100 dark:bg-[#1c1c1e] rounded-lg p-1 text-sm border-none outline-none cursor-pointer"
-            >
-              {AVATAR_EMOJIS.map(emoji => (
-                <option key={emoji} value={emoji}>
-                  {emoji}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedEmoji}
+            />
           </div>
         </div>
 

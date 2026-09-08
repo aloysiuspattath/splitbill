@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, Edit3, ArrowRight, Store, Calendar, Check, AlertCircle, Scissors } from 'lucide-react';
 import { BillItem, CurrencyCode, BillCategory, BILL_CATEGORIES, Person } from '../types';
 import { formatMoney, toPaise, fromPaise } from '../utils/currency';
+import { PersonSelect } from '../components/PersonSelect';
 
 interface ReviewReceiptStepProps {
   restaurantName: string;
@@ -301,15 +302,12 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                   Who paid this bill?
                 </span>
-                <select
-                  value={paidBy || people[0]?.id || ''}
-                  onChange={e => onUpdatePaidBy(e.target.value)}
-                  className="bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
-                >
-                  {people.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+                <PersonSelect
+                  people={people}
+                  selectedPersonId={paidBy || people[0]?.id}
+                  onSelect={onUpdatePaidBy}
+                  variant="compact"
+                />
               </div>
             </div>
           )}
