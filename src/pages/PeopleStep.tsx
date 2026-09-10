@@ -243,6 +243,11 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
               <Plus className="w-5 h-5 stroke-[2.5]" />
             </button>
           </div>
+          {upiInput.trim() && !upiInput.includes('@') && (
+            <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-500 px-2 mt-0.5">
+              Include the '@' symbol (e.g. name@oksbi) so the UPI app accepts it!
+            </p>
+          )}
         </div>
 
         {/* Quick Suggestion Chips */}

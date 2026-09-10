@@ -183,6 +183,11 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
                     <Plus className="w-5 h-5" />
                   </button>
                 </div>
+                {newMemberUpiId.trim() && !newMemberUpiId.includes('@') && (
+                  <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-500 px-1">
+                    UPI IDs usually require an '@' symbol (e.g. 9876543210@paytm). Pure phone numbers might fail in some apps.
+                  </p>
+                )}
               </div>
             </div>
           </div>
