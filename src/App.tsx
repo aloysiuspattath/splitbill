@@ -314,13 +314,13 @@ export function App() {
           setIsRecentOpen(true);
         }}
         onGoHome={() => {
-          if (bill.groupId && activeGroup && appMode === 'bill') {
-            setAppMode('group');
-            setStep(0);
-          } else {
-            setAppMode('home');
-            setStep(0);
-          }
+          // Hard reset to home page
+          setBill(EMPTY_BILL);
+          setActiveGroup(null);
+          setGroupBills([]);
+          setAppMode('home');
+          setStep(0);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         savedBillsCount={recentBills.length}
       />

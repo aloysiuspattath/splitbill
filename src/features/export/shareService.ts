@@ -10,13 +10,20 @@ export function generateShareText(
   includeItemized: boolean = false
 ): string {
   const currency = bill.currency;
+  const payer = bill.people.find(p => p.id === bill.paidBy) || bill.people[0];
+  
   const lines: string[] = [
     `🍽️ SplitBill`,
     `${bill.restaurantName || 'Restaurant Bill'}`,
     `Total: ${formatMoney(result.effectiveBillTotalPaise, currency)}`,
-    ``,
-    `--------------------------------`,
   ];
+  
+  if (payer && payer.upiId) {
+    lines.push(`📱 Pay ${payer.name} via UPI: ${payer.upiId}`);
+  }
+  
+  lines.push(``);
+  lines.push(`--------------------------------`);
 
   result.personShares.forEach(person => {
     lines.push(`${person.personName} — ${formatMoney(person.totalPaise, currency)}`);

@@ -52,7 +52,11 @@ export function generateGroupShareText(
         const from = group.members.find(m => m.id === tx.fromPersonId);
         const to = group.members.find(m => m.id === tx.toPersonId);
         if (from && to) {
-          lines.push(`👉 *${from.name}* pays *${to.name}*: ${formatMoney(tx.amountPaise, currency)}`);
+          let line = `👉 *${from.name}* pays *${to.name}*: ${formatMoney(tx.amountPaise, currency)}`;
+          if (to.upiId) {
+            line += `\n   📱 UPI ID: ${to.upiId}`;
+          }
+          lines.push(line);
         }
       });
     }
@@ -105,7 +109,11 @@ export function generateGroupShareText(
       const from = group.members.find(m => m.id === tx.fromPersonId);
       const to = group.members.find(m => m.id === tx.toPersonId);
       if (from && to) {
-        lines.push(`👉 *${from.name}* pays *${to.name}*: ${formatMoney(tx.amountPaise, currency)}`);
+        let line = `👉 *${from.name}* pays *${to.name}*: ${formatMoney(tx.amountPaise, currency)}`;
+        if (to.upiId) {
+          line += `\n   📱 UPI ID: ${to.upiId}`;
+        }
+        lines.push(line);
       }
     });
   }
