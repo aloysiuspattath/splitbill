@@ -158,8 +158,10 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
 
     // Check if we hit the totals / summary section (marks end of itemized section)
     if (
-      /\b(sub\s*total|subtotal|grand\s*total|net\s*amount|total\s*due)\b/i.test(line) ||
+      /\b(sub\s*total|subtotal|grand\s*total|net\s*amount|total\s*due|total\s*payable)\b/i.test(line) ||
       /^total\s*qty/i.test(line) ||
+      /^total\s*[:\s-]*\d/i.test(line) ||
+      /^(total|amount|amt)\s*[:\s-]*$/i.test(line) ||
       /\b(round\s*off|fssai|thumhari|consume\s*packed)\b/i.test(line)
     ) {
       itemsSectionEnded = true;
