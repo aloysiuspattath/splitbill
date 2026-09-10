@@ -264,18 +264,11 @@ export const GroupDashboard: React.FC<GroupDashboardProps> = ({
                 </p>
                 <div className="flex flex-col gap-2 max-w-xs mx-auto">
                   <button
-                    onClick={() => cameraInputRef.current?.click()}
+                    onClick={() => setIsActionSheetOpen(true)}
                     className="flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-md shadow-brand-500/20 active:scale-95 transition-all"
                   >
-                    <Camera className="w-4 h-4" />
-                    <span>Scan Receipt with Camera</span>
-                  </button>
-                  <button
-                    onClick={() => setIsQuickExpenseOpen(true)}
-                    className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-[#2c2c2e] hover:bg-slate-200 dark:hover:bg-[#38383a] text-slate-800 dark:text-slate-200 font-bold py-3 px-4 rounded-xl text-sm active:scale-95 transition-all"
-                  >
-                    <Zap className="w-4 h-4 text-amber-500 fill-current" />
-                    <span>Quick Expense (Cab, Bar, etc.)</span>
+                    <Plus className="w-4 h-4 stroke-[3]" />
+                    <span>Add your first expense</span>
                   </button>
                 </div>
               </div>
