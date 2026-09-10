@@ -57,7 +57,7 @@ export function generateGroupShareText(
       });
     }
     lines.push(``);
-    lines.push(`Split effortlessly with SplitBill: https://splitbill.techfliq.com ⚡`);
+    lines.push(`Calculated using SplitBill (Free & No Login): https://splitbill.techfliq.com ⚡`);
     return lines.join('\n');
   }
 
@@ -124,7 +124,7 @@ export function generateGroupShareText(
   }
 
   lines.push(``);
-  lines.push(`Split effortlessly with SplitBill: https://splitbill.techfliq.com 🔒`);
+  lines.push(`Calculated using SplitBill (Free & No Login): https://splitbill.techfliq.com 🔒`);
 
   return lines.join('\n');
 }

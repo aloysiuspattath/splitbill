@@ -19,6 +19,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
     { id: `p-${Date.now()}-1`, name: 'Me', avatar: '😎', color: 'bg-brand-500' }
   ]);
   const [newMemberName, setNewMemberName] = useState('');
+  const [newMemberUpiId, setNewMemberUpiId] = useState('');
 
   if (!isOpen) return null;
 
@@ -31,10 +32,12 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
       name: newMemberName.trim(),
       avatar: DEFAULT_AVATARS[members.length % DEFAULT_AVATARS.length],
       color: DEFAULT_COLORS[members.length % DEFAULT_COLORS.length],
+      upiId: newMemberUpiId.trim() || undefined,
     };
 
     setMembers([...members, newPerson]);
     setNewMemberName('');
+    setNewMemberUpiId('');
   };
 
   const handleRemoveMember = (id: string) => {
@@ -126,7 +129,10 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
                 <div key={member.id} className="flex items-center justify-between bg-slate-50 dark:bg-[#2c2c2e]/50 px-4 py-3 rounded-2xl">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{member.avatar}</span>
-                    <span className="font-bold text-slate-900 dark:text-white">{member.name}</span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-900 dark:text-white">{member.name}</span>
+                      {member.upiId && <span className="text-[10px] text-slate-500 font-medium">{member.upiId}</span>}
+                    </div>
                   </div>
                   {members.length > 1 && (
                     <button onClick={() => handleRemoveMember(member.id)} className="text-slate-400 hover:text-rose-500 p-1">
@@ -137,23 +143,34 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
               ))}
             </div>
 
-            <form onSubmit={handleAddMember} className="flex gap-2 mt-2">
-              <input
-                type="text"
-                value={newMemberName}
-                onChange={e => setNewMemberName(e.target.value)}
-                placeholder="Add person..."
-                className="flex-1 bg-slate-100 dark:bg-[#2c2c2e] text-slate-900 dark:text-white px-4 py-3 rounded-2xl font-medium outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-              />
-              <button
-                type="button"
-                onClick={handleAddMember}
-                disabled={!newMemberName.trim()}
-                className="bg-slate-200 dark:bg-slate-700 hover:bg-brand-100 dark:hover:bg-brand-900/40 text-brand-600 dark:text-brand-400 px-4 rounded-2xl font-bold disabled:opacity-50 transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
-            </form>
+            <div className="bg-slate-50 dark:bg-[#2c2c2e]/30 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/80">
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={newMemberName}
+                  onChange={e => setNewMemberName(e.target.value)}
+                  placeholder="Friend's Name"
+                  className="w-full bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white px-4 py-3 rounded-xl font-medium outline-none focus:ring-2 focus:ring-brand-500 text-sm border border-slate-200 dark:border-slate-800"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newMemberUpiId}
+                    onChange={e => setNewMemberUpiId(e.target.value)}
+                    placeholder="UPI ID or Phone No."
+                    className="flex-1 bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white px-4 py-3 rounded-xl font-medium outline-none focus:ring-2 focus:ring-brand-500 text-sm border border-slate-200 dark:border-slate-800"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddMember}
+                    disabled={!newMemberName.trim()}
+                    className="bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 px-5 rounded-xl font-bold disabled:opacity-50 transition-colors flex items-center justify-center"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

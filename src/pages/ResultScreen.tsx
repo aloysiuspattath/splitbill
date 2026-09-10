@@ -270,6 +270,23 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {currency === 'INR' && person.personId !== (bill.paidBy || bill.people[0]?.id) && (() => {
+                      const payer = bill.people.find(p => p.id === (bill.paidBy || bill.people[0]?.id));
+                      if (payer && payer.upiId) {
+                        return (
+                          <a 
+                            href={`upi://pay?pa=${payer.upiId}&pn=${payer.name}&am=${(person.totalPaise / 100).toFixed(2)}&cu=INR`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold px-2.5 py-1.5 rounded-lg text-[10px] uppercase tracking-wider border border-indigo-100 dark:border-indigo-900/50 hover:bg-indigo-100 transition-colors mr-2"
+                          >
+                            Pay via UPI
+                          </a>
+                        );
+                      }
+                      return null;
+                    })()}
                     <span className="text-base font-black text-slate-900 dark:text-white">
                       {formatMoney(person.totalPaise, currency)}
                     </span>

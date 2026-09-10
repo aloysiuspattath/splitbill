@@ -102,7 +102,9 @@ export function calculateDetailedBalances(bills: Bill[]): Record<string, Detaile
       if (!result[payerId]) {
         result[payerId] = { personId: payerId, totalPaidPaise: 0, totalSharePaise: 0, netPaise: 0 };
       }
-      result[payerId].totalPaidPaise += calc.effectiveBillTotalPaise;
+      if (!bill.isSettlement) {
+        result[payerId].totalPaidPaise += calc.effectiveBillTotalPaise;
+      }
       result[payerId].netPaise += calc.effectiveBillTotalPaise;
     }
 
@@ -110,7 +112,9 @@ export function calculateDetailedBalances(bills: Bill[]): Record<string, Detaile
       if (!result[share.personId]) {
         result[share.personId] = { personId: share.personId, totalPaidPaise: 0, totalSharePaise: 0, netPaise: 0 };
       }
-      result[share.personId].totalSharePaise += share.totalPaise;
+      if (!bill.isSettlement) {
+        result[share.personId].totalSharePaise += share.totalPaise;
+      }
       result[share.personId].netPaise -= share.totalPaise;
     }
   }
@@ -125,6 +129,7 @@ export function calculateCategoryTotals(bills: Bill[]): Partial<Record<string, n
   const totals: Partial<Record<string, number>> = {};
 
   for (const bill of bills) {
+    if (bill.isSettlement) continue;
     const calc = calculateBill(bill);
     const cat = bill.category || 'other';
     totals[cat] = (totals[cat] || 0) + calc.effectiveBillTotalPaise;

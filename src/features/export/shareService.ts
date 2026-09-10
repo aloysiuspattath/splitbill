@@ -36,7 +36,7 @@ export function generateShareText(
   lines.push(`--------------------------------`);
   lines.push(`Total: ${formatMoney(result.effectiveBillTotalPaise, currency)}`);
   lines.push(``);
-  lines.push(`Split effortlessly with SplitBill: https://splitbill.techfliq.com (100% private, no signup)`);
+  lines.push(`Calculated using SplitBill (Free & No Login): https://splitbill.techfliq.com ⚡`);
 
   return lines.join('\n');
 }

@@ -56,6 +56,7 @@ export const GroupDashboard: React.FC<GroupDashboardProps> = ({
   const transactions = calculateSettleUp(bills);
   
   const totalGroupSpentPaise = bills.reduce((sum, b) => {
+    if (b.isSettlement) return sum;
     return sum + calculateBill(b).effectiveBillTotalPaise;
   }, 0);
 
@@ -80,6 +81,37 @@ export const GroupDashboard: React.FC<GroupDashboardProps> = ({
       onScanExpense(file);
     }
     e.target.value = '';
+  };
+
+  const handleMarkAsPaid = async (tx: any) => {
+    const newBill: Bill = {
+      id: `bill-${Date.now()}`,
+      restaurantName: 'Settlement Payment',
+      date: new Date().toISOString().split('T')[0],
+      currency: group.currency,
+      items: [
+        {
+          id: `item-${Date.now()}`,
+          name: 'Settlement Transfer',
+          quantity: 1,
+          unitPricePaise: tx.amountPaise,
+          totalPricePaise: tx.amountPaise,
+          assignedPersonIds: [tx.toPersonId],
+          assignments: [{ personId: tx.toPersonId, mode: 'equal' }],
+        }
+      ],
+      people: group.members,
+      taxes: [],
+      discount: { type: 'none', allocationMethod: 'proportional' },
+      groupId: group.id,
+      paidBy: tx.fromPersonId,
+      category: 'settlement',
+      isPermanent: true,
+      isSettlement: true,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    await onQuickAddExpense(newBill);
   };
 
   return (
@@ -395,36 +427,57 @@ export const GroupDashboard: React.FC<GroupDashboardProps> = ({
                 return (
                   <div 
                     key={idx} 
-                    className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3"
+                    className="bg-white dark:bg-[#1c1c1e] p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-3"
                   >
-                    <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg border border-rose-100 dark:border-rose-900/40">
-                        {from.avatar || '🧑‍💻'}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg border border-rose-100 dark:border-rose-900/40">
+                          {from.avatar || '🧑‍💻'}
+                        </div>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate w-full text-center">
+                          {from.name}
+                        </span>
                       </div>
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate w-full text-center">
-                        {from.name}
-                      </span>
+
+                      <div className="flex flex-col items-center justify-center flex-[2] px-2">
+                        <span className="font-black text-rose-600 dark:text-rose-400 text-sm mb-1">
+                          {formatMoney(tx.amountPaise, group.currency)}
+                        </span>
+                        <div className="w-full flex items-center gap-1">
+                          <div className="h-0.5 bg-slate-200 dark:bg-slate-700 flex-1" />
+                          <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+                          <div className="h-0.5 bg-slate-200 dark:bg-slate-700 flex-1" />
+                        </div>
+                        <span className="text-[10px] font-semibold text-slate-400 mt-1">pays</span>
+                      </div>
+
+                      <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg border border-emerald-100 dark:border-emerald-900/40">
+                          {to.avatar || '🧑‍💻'}
+                        </div>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate w-full text-center">
+                          {to.name}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="flex flex-col items-center justify-center flex-[2] px-2">
-                      <span className="font-black text-rose-600 dark:text-rose-400 text-sm mb-1">
-                        {formatMoney(tx.amountPaise, group.currency)}
-                      </span>
-                      <div className="w-full flex items-center gap-1">
-                        <div className="h-0.5 bg-slate-200 dark:bg-slate-700 flex-1" />
-                        <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-                        <div className="h-0.5 bg-slate-200 dark:bg-slate-700 flex-1" />
-                      </div>
-                      <span className="text-[10px] font-semibold text-slate-400 mt-1">pays</span>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg border border-emerald-100 dark:border-emerald-900/40">
-                        {to.avatar || '🧑‍💻'}
-                      </div>
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate w-full text-center">
-                        {to.name}
-                      </span>
+                    <div className="flex gap-2 mt-1">
+                      {group.currency === 'INR' && to.upiId && (
+                        <a 
+                          href={`upi://pay?pa=${to.upiId}&pn=${to.name}&am=${(tx.amountPaise / 100).toFixed(2)}&cu=INR`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
+                        >
+                          Pay via UPI
+                        </a>
+                      )}
+                      <button 
+                        onClick={() => handleMarkAsPaid(tx)}
+                        className="flex-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                      >
+                        Mark as Paid
+                      </button>
                     </div>
                   </div>
                 );

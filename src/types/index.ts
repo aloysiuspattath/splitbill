@@ -12,6 +12,7 @@ export interface Person {
   name: string;
   avatar: string; // emoji or avatar identifier
   color: string;  // color class or hex for badge/avatar ring
+  upiId?: string; // Optional UPI ID for direct GPay / PhonePe payments
 }
 
 export type SplitMode = 'equal' | 'percentage' | 'amount' | 'shares';
@@ -62,6 +63,7 @@ export type BillCategory =
   | 'groceries' 
   | 'entertainment' 
   | 'shopping' 
+  | 'settlement'
   | 'other';
 
 export interface CategoryInfo {
@@ -78,6 +80,7 @@ export const BILL_CATEGORIES: CategoryInfo[] = [
   { id: 'groceries', label: 'Groceries', emoji: '🛒' },
   { id: 'entertainment', label: 'Activities & Events', emoji: '🎟️' },
   { id: 'shopping', label: 'Shopping', emoji: '🛍️' },
+  { id: 'settlement', label: 'Payment / Settlement', emoji: '💸' },
   { id: 'other', label: 'General / Other', emoji: '📦' },
 ];
 
@@ -92,6 +95,7 @@ export interface Bill {
   discount: DiscountConfig;
   customTipPaise?: number;
   isPermanent?: boolean;
+  isSettlement?: boolean; // Flag to indicate if this is a person-to-person debt settlement
   groupId?: string; // If this bill belongs to a group
   paidBy?: string; // personId of the person who paid the bill (defaults to the first person or unassigned if not set)
   category?: BillCategory; // e.g. food, bar, transport...
