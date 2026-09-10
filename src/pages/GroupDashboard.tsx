@@ -29,6 +29,7 @@ interface GroupDashboardProps {
   onQuickAddExpense: (bill: Bill) => Promise<void>;
   onEditExpense: (bill: Bill) => void;
   onDeleteExpense: (billId: string) => Promise<void>;
+  onEditGroup?: () => void;
   onBack: () => void;
 }
 
@@ -40,6 +41,7 @@ export const GroupDashboard: React.FC<GroupDashboardProps> = ({
   onQuickAddExpense,
   onEditExpense,
   onDeleteExpense,
+  onEditGroup,
   onBack,
 }) => {
   const [activeTab, setActiveTab] = useState<'expenses' | 'balances' | 'settle'>('expenses');
@@ -143,12 +145,18 @@ export const GroupDashboard: React.FC<GroupDashboardProps> = ({
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div>
-              <h1 className="text-xl font-extrabold tracking-tight">{group.name}</h1>
+            <button 
+              onClick={onEditGroup}
+              className="text-left group/edit active:scale-[0.98] transition-transform"
+            >
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-xl font-extrabold tracking-tight group-hover/edit:text-brand-600 transition-colors">{group.name}</h1>
+                <PenLine className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover/edit:text-brand-600 transition-colors" />
+              </div>
               <p className="text-xs font-semibold text-slate-400">
                 {group.members.length} members • {bills.length} bills
               </p>
-            </div>
+            </button>
           </div>
 
           <div className="flex items-center gap-1.5">

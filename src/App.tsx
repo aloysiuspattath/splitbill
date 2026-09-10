@@ -123,6 +123,7 @@ export function App() {
   const [groupBills, setGroupBills] = useState<Bill[]>([]);
   const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false);
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  const [isEditGroupOpen, setIsEditGroupOpen] = useState(false);
 
   const refreshGroups = async () => {
     try {
@@ -351,6 +352,7 @@ export function App() {
               await deleteBill(billId);
               await refreshGroupBills(activeGroup.id);
             }}
+            onEditGroup={() => setIsEditGroupOpen(true)}
             onBack={() => setAppMode('home')}
           />
         ) : appMode === 'home' || appMode === 'bill' ? (
@@ -538,14 +540,21 @@ export function App() {
         }}
       />
       <CreateGroupModal
-        isOpen={isCreateGroupOpen}
-        onClose={() => setIsCreateGroupOpen(false)}
+        isOpen={isCreateGroupOpen || isEditGroupOpen}
+        initialGroup={isEditGroupOpen && activeGroup ? activeGroup : undefined}
+        onClose={() => {
+          setIsCreateGroupOpen(false);
+          setIsEditGroupOpen(false);
+        }}
         onCreate={async (g) => {
           await saveGroup(g);
           await refreshGroups();
           setIsCreateGroupOpen(false);
+          setIsEditGroupOpen(false);
           setActiveGroup(g);
-          setGroupBills([]);
+          if (!isEditGroupOpen) {
+            setGroupBills([]);
+          }
           setAppMode('group');
         }}
       />

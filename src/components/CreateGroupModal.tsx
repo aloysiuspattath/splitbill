@@ -7,19 +7,31 @@ interface CreateGroupModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (group: Group) => void;
+  initialGroup?: Group;
 }
 
 const DEFAULT_AVATARS = ['🧑‍💻', '👩‍🚀', '🦸‍♂️', '🥷', '🧙‍♀️', '🧟‍♂️', '🧛‍♀️', '🧜‍♂️', '🧚‍♀️', '🧞‍♂️'];
 const DEFAULT_COLORS = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500'];
 
-export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onClose, onCreate }) => {
-  const [name, setName] = useState('');
-  const [currency, setCurrency] = useState<CurrencyCode>('INR');
-  const [members, setMembers] = useState<Person[]>([
-    { id: `p-${Date.now()}-1`, name: 'Me', avatar: '😎', color: 'bg-brand-500' }
-  ]);
+export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onClose, onCreate, initialGroup }) => {
+  const [name, setName] = useState(initialGroup?.name || '');
+  const [currency, setCurrency] = useState<CurrencyCode>(initialGroup?.currency || 'INR');
+  const [members, setMembers] = useState<Person[]>(
+    initialGroup?.members || [{ id: `p-${Date.now()}-1`, name: 'Me', avatar: '😎', color: 'bg-brand-500' }]
+  );
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberUpiId, setNewMemberUpiId] = useState('');
+
+  // Reset state when opening/closing
+  React.useEffect(() => {
+    if (isOpen) {
+      setName(initialGroup?.name || '');
+      setCurrency(initialGroup?.currency || 'INR');
+      setMembers(initialGroup?.members || [{ id: `p-${Date.now()}-1`, name: 'Me', avatar: '😎', color: 'bg-brand-500' }]);
+      setNewMemberName('');
+      setNewMemberUpiId('');
+    }
+  }, [isOpen, initialGroup]);
 
   if (!isOpen) return null;
 
@@ -65,11 +77,11 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
     }
 
     const newGroup: Group = {
-      id: `group-${Date.now()}`,
+      id: initialGroup?.id || `group-${Date.now()}`,
       name: name.trim(),
       currency,
       members: finalMembers,
-      createdAt: Date.now(),
+      createdAt: initialGroup?.createdAt || Date.now(),
       updatedAt: Date.now(),
     };
 
@@ -89,7 +101,9 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
             <div className="w-10 h-10 rounded-2xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400">
               <Users className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Create Group</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              {initialGroup ? 'Edit Group' : 'Create Group'}
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -180,7 +194,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
             onClick={handleCreate}
             className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl active:scale-95 transition-all shadow-md shadow-brand-500/25"
           >
-            Create Group
+            {initialGroup ? 'Save Changes' : 'Create Group'}
           </button>
         </div>
       </div>

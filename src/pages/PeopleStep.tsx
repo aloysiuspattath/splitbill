@@ -22,6 +22,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
   onBack,
 }) => {
   const [nameInput, setNameInput] = useState('');
+  const [upiInput, setUpiInput] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState(AVATAR_EMOJIS[0]);
   const [selectedColor, setSelectedColor] = useState(AVATAR_COLORS[0]);
   const [personToDelete, setPersonToDelete] = useState<Person | null>(null);
@@ -43,10 +44,12 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
       name: cleanName,
       avatar: selectedEmoji || defAvatar,
       color: selectedColor || defColor,
+      upiId: upiInput.trim() || undefined,
     };
 
     onUpdatePeople([...people, newPerson]);
     setNameInput('');
+    setUpiInput('');
     // Pick next avatar suggestion
     const nextPreset = getRandomAvatar(people.length + 1);
     setSelectedEmoji(nextPreset.avatar);
@@ -96,9 +99,11 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
         name: cleanName,
         avatar: selectedEmoji || defAvatar,
         color: selectedColor || defColor,
+        upiId: upiInput.trim() || undefined,
       };
       onUpdatePeople([...people, newPerson]);
       setNameInput('');
+      setUpiInput('');
     }
     onContinue();
   };
@@ -174,8 +179,14 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
                         {person.name}
                       </span>
 
+                      {person.upiId && (
+                        <span className={`text-[8px] text-slate-400 font-medium truncate max-w-[60px] ${isList ? 'text-left max-w-[120px]' : 'text-center'}`}>
+                          {person.upiId}
+                        </span>
+                      )}
+
                       {assignedItemCount > 0 && (
-                        <span className="text-[9px] text-brand-600 font-semibold">
+                        <span className="text-[9px] text-brand-600 font-semibold mt-0.5">
                           {assignedItemCount} {assignedItemCount === 1 ? 'item' : 'items'}
                         </span>
                       )}
@@ -207,22 +218,31 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2">
           <input
             type="text"
             value={nameInput}
             onChange={e => setNameInput(e.target.value)}
             placeholder="Enter friend's name (e.g. Hafeez)"
-            className="flex-1 text-sm font-semibold bg-[#f2f2f7] dark:bg-black px-5 py-4 rounded-[20px] border border-black/5 dark:border-transparent focus:ring-2 focus:ring-brand-500 outline-none transition-all duration-300"
+            className="w-full text-sm font-semibold bg-[#f2f2f7] dark:bg-black px-5 py-4 rounded-[20px] border border-black/5 dark:border-transparent focus:ring-2 focus:ring-brand-500 outline-none transition-all duration-300"
           />
-          <button
-            type="submit"
-            disabled={!nameInput.trim()}
-            className="p-4 rounded-[20px] bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white shadow-[0_8px_16px_rgb(37,99,235,0.25)] active:scale-95 transition-all duration-300"
-            title="Add Friend"
-          >
-            <Plus className="w-5 h-5 stroke-[2.5]" />
-          </button>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={upiInput}
+              onChange={e => setUpiInput(e.target.value)}
+              placeholder="UPI ID or Phone No. (optional)"
+              className="flex-1 text-sm font-semibold bg-[#f2f2f7] dark:bg-black px-5 py-4 rounded-[20px] border border-black/5 dark:border-transparent focus:ring-2 focus:ring-brand-500 outline-none transition-all duration-300"
+            />
+            <button
+              type="submit"
+              disabled={!nameInput.trim()}
+              className="p-4 rounded-[20px] bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white shadow-[0_8px_16px_rgb(37,99,235,0.25)] active:scale-95 transition-all duration-300 flex items-center justify-center min-w-[56px]"
+              title="Add Friend"
+            >
+              <Plus className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          </div>
         </div>
 
         {/* Quick Suggestion Chips */}
