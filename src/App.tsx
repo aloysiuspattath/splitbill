@@ -1,5 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { Bill, CalculatedBillResult, Group } from './types';
+import { Bill, CalculatedBillResult, Group, CurrencyCode, Person } from './types';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { StepIndicator } from './components/StepIndicator';
@@ -46,19 +46,29 @@ const InfoModal = lazy(() =>
 );
 import type { InfoTabType } from './components/InfoModal';
 
-const EMPTY_BILL: Bill = {
-  id: `bill-${Date.now()}`,
-  restaurantName: '',
-  date: new Date().toISOString().split('T')[0],
-  currency: 'INR',
-  items: [],
-  people: [],
-  taxes: [],
-  discount: { type: 'none', allocationMethod: 'proportional' },
-  category: 'food',
-  isPermanent: false,
-  createdAt: Date.now(),
-  updatedAt: Date.now(),
+export const getEmptyBill = (): Bill => {
+  let defaultCurrency: CurrencyCode = 'INR';
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('splitbill_currency') as CurrencyCode;
+    const regionCurr = (window as any).__REGION__?.currency;
+    if (regionCurr) defaultCurrency = regionCurr;
+    if (saved && !regionCurr) defaultCurrency = saved; // Priority to region if injected
+  }
+  
+  return {
+    id: `bill-${Date.now()}`,
+    restaurantName: '',
+    date: new Date().toISOString().split('T')[0],
+    currency: defaultCurrency,
+    items: [],
+    people: [],
+    taxes: [],
+    discount: { type: 'none', allocationMethod: 'proportional' },
+    category: 'food',
+    isPermanent: false,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
 };
 
 export function App() {
@@ -80,7 +90,7 @@ export function App() {
   }, [isDark]);
 
   // Main Bill State
-  const [bill, setBill] = useState<Bill>(EMPTY_BILL);
+  const [bill, setBill] = useState<Bill>(getEmptyBill());
   const [step, setStep] = useState<number>(0);
   const [maxAccessibleStep, setMaxAccessibleStep] = useState<number>(1);
 
@@ -168,10 +178,10 @@ export function App() {
   };
 
   // 1. Start Manual Bill
-  const handleStartManual = (groupId?: string, people?: typeof EMPTY_BILL.people) => {
+  const handleStartManual = (groupId?: string, people?: Person[]) => {
     const cur = (groupId && activeGroup) ? activeGroup.currency : bill.currency;
     setBill({
-      ...EMPTY_BILL,
+      ...getEmptyBill(),
       groupId,
       people: people || [],
       paidBy: people?.[0]?.id,
@@ -188,7 +198,7 @@ export function App() {
   };
 
   // 2. Start OCR Receipt Scan
-  const handleStartScan = async (file: File, groupId?: string, people?: typeof EMPTY_BILL.people) => {
+  const handleStartScan = async (file: File, groupId?: string, people?: Person[]) => {
     setIsOcrLoading(true);
     setOcrPreviewUrl(URL.createObjectURL(file));
     setOcrNotice(undefined);
@@ -201,7 +211,7 @@ export function App() {
       });
 
       const newBill: Bill = {
-        ...EMPTY_BILL,
+        ...getEmptyBill(),
         groupId,
         people: people || [],
         paidBy: people?.[0]?.id,
@@ -315,7 +325,7 @@ export function App() {
         }}
         onGoHome={() => {
           // Hard reset to home page
-          setBill(EMPTY_BILL);
+          setBill(getEmptyBill());
           setActiveGroup(null);
           setGroupBills([]);
           setAppMode('home');
@@ -408,6 +418,7 @@ export function App() {
 
           {step === 2 && (
             <PeopleStep
+              currency={bill.currency}
               people={bill.people}
               items={bill.items}
               onUpdatePeople={people => setBill(prev => ({ ...prev, people }))}

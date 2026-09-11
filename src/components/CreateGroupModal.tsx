@@ -166,29 +166,36 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
                   placeholder="Friend's Name"
                   className="w-full bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white px-4 py-3 rounded-xl font-medium outline-none focus:ring-2 focus:ring-brand-500 text-sm border border-slate-200 dark:border-slate-800"
                 />
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newMemberUpiId}
-                    onChange={e => setNewMemberUpiId(e.target.value)}
-                    placeholder="UPI ID or Phone No."
-                    className="flex-1 bg-white dark:bg-[#1c1c1e] text-slate-900 dark:text-white px-4 py-3 rounded-xl font-medium outline-none focus:ring-2 focus:ring-brand-500 text-sm border border-slate-200 dark:border-slate-800"
-                  />
+                {currency === 'INR' && (
+                  <div className="w-full">
+                    <input
+                      type="text"
+                      value={newMemberUpiId}
+                      onChange={e => setNewMemberUpiId(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleAddMember()}
+                      placeholder="UPI ID or Phone No."
+                      className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none"
+                    />
+                  </div>
+                )}
+                
+                <div className="flex-shrink-0 flex items-center pr-1">
                   <button
                     type="button"
                     onClick={handleAddMember}
                     disabled={!newMemberName.trim()}
-                    className="bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 px-5 rounded-xl font-bold disabled:opacity-50 transition-colors flex items-center justify-center"
+                    className="bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 px-5 rounded-xl font-bold disabled:opacity-50 transition-colors flex items-center justify-center h-10"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
                 </div>
-                {newMemberUpiId.trim() && !newMemberUpiId.includes('@') && (
-                  <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-500 px-1">
-                    UPI IDs usually require an '@' symbol (e.g. 9876543210@paytm). Pure phone numbers might fail in some apps.
-                  </p>
-                )}
               </div>
+              
+              {currency === 'INR' && newMemberUpiId.trim() && !newMemberUpiId.includes('@') && (
+                <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-500 px-1 mt-1">
+                  UPI IDs usually require an '@' symbol (e.g. 9876543210@paytm). Pure phone numbers might fail in some apps.
+                </p>
+              )}
             </div>
           </div>
         </div>

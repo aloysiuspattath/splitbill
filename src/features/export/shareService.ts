@@ -18,7 +18,7 @@ export function generateShareText(
     `Total: ${formatMoney(result.effectiveBillTotalPaise, currency)}`,
   ];
   
-  if (payer && payer.upiId) {
+  if (currency === 'INR' && payer && payer.upiId) {
     lines.push(`📱 Pay ${payer.name} via UPI: ${payer.upiId}`);
   }
   

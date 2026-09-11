@@ -7,6 +7,7 @@ import { EmojiPicker } from '../components/EmojiPicker';
 interface PeopleStepProps {
   people: Person[];
   items: BillItem[];
+  currency: string;
   onUpdatePeople: (people: Person[]) => void;
   onUpdateItems: (items: BillItem[]) => void;
   onContinue: () => void;
@@ -16,6 +17,7 @@ interface PeopleStepProps {
 export const PeopleStep: React.FC<PeopleStepProps> = ({
   people,
   items,
+  currency,
   onUpdatePeople,
   onUpdateItems,
   onContinue,
@@ -227,23 +229,26 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
             className="w-full text-sm font-semibold bg-[#f2f2f7] dark:bg-black px-5 py-4 rounded-[20px] border border-black/5 dark:border-transparent focus:ring-2 focus:ring-brand-500 outline-none transition-all duration-300"
           />
           <div className="flex gap-2">
-            <input
-              type="text"
-              value={upiInput}
-              onChange={e => setUpiInput(e.target.value)}
-              placeholder="UPI ID or Phone No. (optional)"
-              className="flex-1 text-sm font-semibold bg-[#f2f2f7] dark:bg-black px-5 py-4 rounded-[20px] border border-black/5 dark:border-transparent focus:ring-2 focus:ring-brand-500 outline-none transition-all duration-300"
-            />
+            {currency === 'INR' && (
+              <input
+                type="text"
+                value={upiInput}
+                onChange={e => setUpiInput(e.target.value)}
+                placeholder="UPI ID or Phone No. (optional)"
+                className="flex-1 text-sm font-semibold bg-[#f2f2f7] dark:bg-black px-5 py-4 rounded-[20px] border border-black/5 dark:border-transparent focus:ring-2 focus:ring-brand-500 outline-none transition-all duration-300"
+              />
+            )}
             <button
               type="submit"
               disabled={!nameInput.trim()}
-              className="p-4 rounded-[20px] bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white shadow-[0_8px_16px_rgb(37,99,235,0.25)] active:scale-95 transition-all duration-300 flex items-center justify-center min-w-[56px]"
+              className={`p-4 rounded-[20px] bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white shadow-[0_8px_16px_rgb(37,99,235,0.25)] active:scale-95 transition-all duration-300 flex items-center justify-center min-w-[56px] ${currency !== 'INR' ? 'w-full' : ''}`}
               title="Add Friend"
             >
               <Plus className="w-5 h-5 stroke-[2.5]" />
+              {currency !== 'INR' && <span className="ml-2 font-bold">Add Friend</span>}
             </button>
           </div>
-          {upiInput.trim() && !upiInput.includes('@') && (
+          {currency === 'INR' && upiInput.trim() && !upiInput.includes('@') && (
             <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-500 px-2 mt-0.5">
               Include the '@' symbol (e.g. name@oksbi) so the UPI app accepts it!
             </p>
