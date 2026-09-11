@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, X, UserPlus, ArrowRight, AlertTriangle } from 'lucide-react';
 import { Person, BillItem } from '../types';
@@ -113,7 +113,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-5">
+    <div className="max-w-md lg:max-w-3xl mx-auto px-4 py-4 space-y-5">
       {/* Step Header */}
       <div>
         <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest block mb-1">

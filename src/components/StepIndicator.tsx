@@ -21,7 +21,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({
   maxAccessibleStep,
 }) => {
   return (
-    <div className="w-full max-w-md mx-auto px-4 py-3 bg-[#f2f2f7]/80 dark:bg-black/80 backdrop-blur-xl border-b border-black/5 dark:border-white/10 transition-colors duration-300">
+    <div className="w-full max-w-md lg:max-w-5xl mx-auto px-4 py-3 bg-[#f2f2f7]/80 dark:bg-black/80 backdrop-blur-xl border-b border-black/5 dark:border-white/10 transition-colors duration-300">
       <div className="flex items-center justify-between relative">
         {/* Background connector line */}
         <div className="absolute left-4 right-4 top-[14px] -translate-y-1/2 h-[2px] bg-slate-200 dark:bg-[#1c1c1e] -z-0" />

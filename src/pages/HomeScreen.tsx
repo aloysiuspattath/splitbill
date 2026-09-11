@@ -105,7 +105,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className="relative max-w-md mx-auto px-5 py-6 flex flex-col items-center text-center min-h-[85vh] justify-between"
+      className="relative max-w-md lg:max-w-5xl mx-auto px-5 py-6 flex flex-col lg:flex-row lg:items-center text-center lg:text-left min-h-[85vh] justify-center lg:justify-between gap-10"
     >
       {/* Full-Screen Drag & Drop Overlay */}
       {isDragging && (

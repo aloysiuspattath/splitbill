@@ -172,7 +172,8 @@ export const AssignStep: React.FC<AssignStepProps> = ({
   const unassignedCount = items.filter(it => it.assignedPersonIds.length === 0).length;
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <div className="max-w-md lg:max-w-6xl mx-auto px-4 py-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:items-start">
+      <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24 mb-6 lg:mb-0">
       {/* Step Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -211,6 +212,8 @@ export const AssignStep: React.FC<AssignStepProps> = ({
         </div>
       )}
 
+      </div>
+      <div className="lg:col-span-8 space-y-4">
       {/* Item Assignment Cards */}
       <div className="space-y-3.5">
         {items.map(item => {
@@ -675,7 +678,9 @@ export const AssignStep: React.FC<AssignStepProps> = ({
         })}
       </div>
 
+      </div>
       {/* Navigation Buttons */}
+      <div className="lg:col-span-12">
       <div className="pt-2 flex items-center gap-3">
         <button
           onClick={onBack}
@@ -692,6 +697,7 @@ export const AssignStep: React.FC<AssignStepProps> = ({
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
+    </div>
     </div>
   );
 };

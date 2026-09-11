@@ -148,7 +148,8 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
   const suspiciousCount = suspiciousItems.length;
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-5">
+    <div className="max-w-md lg:max-w-5xl mx-auto px-4 py-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:items-start">
+      <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-24 mb-6 lg:mb-0">
       {/* Group Trip Banner */}
       {groupName && (
         <div className="p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-700 text-white flex items-center justify-between gap-3 shadow-md animate-fadeIn">
@@ -239,6 +240,8 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
         </div>
       )}
 
+      </div>
+      <div className="lg:col-span-7 space-y-5">
       {/* Modern Receipt Card */}
       <div className="bg-white dark:bg-[#1c1c1e] rounded-[32px] p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] border border-black/5 dark:border-transparent">
         
@@ -538,7 +541,9 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
         </div>
       </div>
 
+      </div>
       {/* Bottom Sticky Action Buttons */}
+      <div className="lg:col-span-12">
       <div className="pt-2 flex flex-col gap-2.5">
         {groupName && onQuickSaveToGroup && items.length > 0 && (
           <button
@@ -572,6 +577,7 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

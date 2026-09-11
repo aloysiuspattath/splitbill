@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Plus, Trash2, ArrowRight, Percent, DollarSign, Heart, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Bill, TaxItem, DiscountConfig, DiscountType, DiscountAllocationMethod, CurrencyCode, CalculatedBillResult } from '../types';
 import { formatMoney, fromPaise, toPaise } from '../utils/currency';
@@ -88,7 +88,7 @@ export const ReviewTaxDiscountStep: React.FC<ReviewTaxDiscountStepProps> = ({
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+    <div className="max-w-md lg:max-w-3xl mx-auto px-4 py-4 space-y-4">
       {/* Step Header */}
       <div>
         <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest block mb-1">
