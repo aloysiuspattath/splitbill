@@ -94,14 +94,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
         <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
           <a
             href="/receipt-scanner.html"
-            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+            className="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors py-1"
           >
             {t('footer.receiptScanner', 'Receipt Scanner')}
           </a>
           <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="/splitwise-alternative.html"
-            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+            className="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors py-1"
           >
             {t('footer.splitwiseAlt', 'Splitwise Alternative')}
           </a>
@@ -109,7 +109,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           <a
             href="/guide/"
             onClick={(e) => { e.preventDefault(); handleOpenTab('guide'); }}
-            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+            className="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors py-1"
           >
             Guide
           </a>
@@ -117,7 +117,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           <a
             href="/faq/"
             onClick={(e) => { e.preventDefault(); handleOpenTab('faq'); }}
-            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+            className="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors py-1"
           >
             FAQ
           </a>
@@ -125,7 +125,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           <a
             href="/about/"
             onClick={(e) => { e.preventDefault(); handleOpenTab('about'); }}
-            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+            className="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors py-1"
           >
             About Us
           </a>
@@ -133,7 +133,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           <a
             href="/terms/"
             onClick={(e) => { e.preventDefault(); handleOpenTab('terms'); }}
-            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+            className="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors py-1"
           >
             Terms
           </a>
@@ -151,7 +151,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
             href="/sitemap.xml"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+            className="text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors py-1"
           >
             Sitemap
           </a>

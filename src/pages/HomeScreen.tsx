@@ -171,7 +171,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
 
           {/* Floating badge */}
-          <div className="absolute -bottom-3 -right-2 bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
+          <div className="absolute -bottom-3 -right-2 bg-emerald-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
             <Zap className="w-3 h-3 fill-current" />
             <span>{t('homeScreen.instantBadge')}</span>
           </div>
@@ -186,7 +186,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </span>
       </h1>
 
-      <p className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 mb-1.5">
+      <p className="text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 mb-1.5">
         {t('homeScreen.heroSubtitle')}
       </p>
 
@@ -232,8 +232,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         {/* Drag & Drop / Paste Hint */}
-        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 py-0.5">
-          {t('homeScreen.dragDropHintStart')}<kbd className="px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-[10px] font-mono">Ctrl+V</kbd>{t('homeScreen.dragDropHintEnd')}
+        <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 py-0.5">
+          {t('homeScreen.dragDropHintStart')}<kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[10px] font-mono text-slate-700 dark:text-slate-300">Ctrl+V</kbd>{t('homeScreen.dragDropHintEnd')}
         </p>
       </div>
 
@@ -249,9 +249,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
               {t('homeScreen.demoRestaurantName')}
-            </h4>
+            </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-0.5">
               {t('homeScreen.demoRestaurantDetails')}
             </p>
@@ -275,9 +275,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               🌴
             </div>
             <div>
-              <h4 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <span>{t('homeScreen.groupsTitle')}</span>
-              </h4>
+              </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 {t('homeScreen.groupsSubtitle')}
               </p>
@@ -323,13 +323,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <Shield className="w-3.5 h-3.5 text-emerald-500" />
           <span>{t('homeScreen.privacyGuarantee')}</span>
         </div>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
           {t('homeScreen.featuresText')}
         </p>
         <button
           onClick={() => forceClearCacheAndReload()}
           aria-label={t('homeScreen.checkUpdatesTitle')}
-          className="mt-1 text-[10px] text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1 transition-colors opacity-80 hover:opacity-100"
+          className="mt-1 text-[10px] text-slate-600 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400 flex items-center gap-1 transition-colors hover:opacity-100"
           title={t('homeScreen.checkUpdatesTitle')}
         >
           <RotateCcw className="w-2.5 h-2.5" />
