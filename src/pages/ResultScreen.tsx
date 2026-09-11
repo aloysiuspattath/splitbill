@@ -376,69 +376,70 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
       </div>
 
       {/* Action Buttons Grid */}
-      <div className="space-y-3">
-        {/* Primary Share Action Grid: WhatsApp, Copy, PDF, Image */}
-        <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
-          {/* WhatsApp Direct Share */}
-          <button
-            onClick={() => openWhatsAppShare(bill, result, false)}
-            aria-label="Share bill on WhatsApp"
-            className="py-2.5 px-1.5 sm:px-2 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 shadow-md active:scale-95 transition-all"
-          >
-            <WhatsAppIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0" />
-            <span>WhatsApp</span>
-          </button>
+      <div className="max-w-md mx-auto space-y-3">
+        {/* Export & Share Card */}
+        <div className="p-5 rounded-[32px] bg-white dark:bg-[#1c1c1e] border border-black/5 dark:border-transparent space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/5">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-brand-500" />
+              Export & Share
+            </h3>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              onClick={() => openWhatsAppShare(bill, result, false)}
+              aria-label="Share bill on WhatsApp"
+              className="py-3 px-3 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-[11px] sm:text-xs flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all"
+            >
+              <WhatsAppIcon className="w-4 h-4 text-white shrink-0" />
+              <span>WhatsApp</span>
+            </button>
 
-          {/* Copy Summary */}
-          <button
-            onClick={handleCopy}
-            aria-label="Copy summary to clipboard"
-            className="py-2.5 px-1.5 sm:px-2 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-[11px] sm:text-xs shadow-md flex items-center justify-center gap-1 sm:gap-1.5 active:scale-95 transition-all"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
-            <span>{copied ? 'Copied!' : 'Copy'}</span>
-          </button>
+            <button
+              onClick={handleCopy}
+              aria-label="Copy summary to clipboard"
+              className="py-3 px-3 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-[11px] sm:text-xs shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              {copied ? <Check className="w-4 h-4 shrink-0" /> : <Copy className="w-4 h-4 shrink-0" />}
+              <span>{copied ? 'Copied!' : 'Copy Text'}</span>
+            </button>
 
-          {/* Download PDF */}
-          <button
-            onClick={handleDownloadPdf}
-            aria-label="Download itemized PDF"
-            className="py-2.5 px-1.5 sm:px-2 rounded-2xl bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2c2c2e] font-bold text-[11px] sm:text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-1 sm:gap-1.5 shadow-sm active:scale-95 transition-all"
-          >
-            <FileDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 shrink-0" />
-            <span>PDF</span>
-          </button>
+            <button
+              onClick={handleDownloadPdf}
+              aria-label="Download itemized PDF"
+              className="py-3 px-3 rounded-2xl bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              <FileDown className="w-4 h-4 shrink-0" />
+              <span>Save PDF</span>
+            </button>
 
-          {/* Save Image */}
+            <button
+              onClick={handleDownloadImage}
+              disabled={isExportingImage}
+              aria-label="Save receipt as PNG image"
+              className="py-3 px-3 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              <ImageIcon className="w-4 h-4 shrink-0" />
+              <span>{isExportingImage ? 'Exporting...' : 'Save Image'}</span>
+            </button>
+          </div>
+
           <button
-            onClick={handleDownloadImage}
-            disabled={isExportingImage}
-            aria-label="Save receipt as PNG image"
-            className="py-2.5 px-1.5 sm:px-2 rounded-2xl bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#2c2c2e] font-bold text-[11px] sm:text-xs border border-black/5 dark:border-transparent flex items-center justify-center gap-1 sm:gap-1.5 shadow-sm active:scale-95 transition-all"
+            onClick={handleShare}
+            className="w-full py-3 px-4 rounded-2xl bg-slate-100 dark:bg-[#2c2c2e] hover:bg-slate-200 dark:hover:bg-[#38383a] text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all"
           >
-            <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 shrink-0" />
-            <span>{isExportingImage ? 'Exporting...' : 'Image'}</span>
+            <span>More Share Options…</span>
           </button>
         </div>
 
-        {/* Generic Web Share API fallback */}
-        <button
-          onClick={handleShare}
-          className="w-full py-2.5 px-4 rounded-2xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all"
-        >
-          <Share2 className="w-4 h-4" />
-          <span>More Share Options…</span>
-        </button>
-
-        {/* Local Storage & Permanent Pinning Card */}
-        <div className="p-4 rounded-[32px] bg-white dark:bg-[#1c1c1e] border border-black/5 dark:border-transparent space-y-3 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Save className="w-4 h-4 text-brand-600" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                Save to Local Storage
-              </span>
-            </div>
+        {/* Local Storage & permanent Pinning Card */}
+        <div className="p-5 rounded-[32px] bg-white dark:bg-[#1c1c1e] border border-black/5 dark:border-transparent space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/5">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Save className="w-4 h-4 text-brand-500" />
+              Local Storage
+            </h3>
             <button
               onClick={handleSave}
               className="px-3 py-1.5 rounded-xl bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 font-bold text-xs hover:bg-brand-100 transition-colors flex items-center gap-1"
@@ -448,22 +449,26 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             </button>
           </div>
 
-          <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer pt-1">
+          <label className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-400 cursor-pointer p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
             <input
               type="checkbox"
               checked={keepPermanently}
               onChange={e => setKeepPermanently(e.target.checked)}
               className="rounded text-brand-600 focus:ring-brand-500 w-4 h-4"
             />
-            <Pin className="w-3.5 h-3.5 text-amber-500" />
-            <span>Keep permanently (by default bills auto-expire after 7 days)</span>
+            <div className="flex flex-col">
+              <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                <Pin className="w-3.5 h-3.5 text-amber-500" /> Keep permanently
+              </span>
+              <span className="text-[10px] text-slate-500">Unsaved bills auto-expire after 7 days</span>
+            </div>
           </label>
 
-          <div className="pt-2 border-t border-slate-100 dark:border-transparent flex justify-between items-center text-xs">
-            <span className="text-slate-400">Transfer between devices:</span>
+          <div className="pt-3 border-t border-slate-100 dark:border-white/5 flex justify-between items-center">
+            <span className="text-[11px] font-semibold text-slate-500">Transfer between devices:</span>
             <button
               onClick={() => exportBillToJson(bill)}
-              className="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1"
+              className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#2c2c2e] text-xs font-semibold text-brand-600 dark:text-brand-400 hover:bg-slate-100 dark:hover:bg-[#38383a] flex items-center gap-1.5 transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export JSON</span>
@@ -491,7 +496,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
               </button>
               <button
                 onClick={onStartNewBill}
-                className="flex-1 py-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] border border-black/5 dark:border-transparent hover:bg-slate-50 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+                className="flex-1 py-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] border border-black/5 dark:border-transparent hover:bg-slate-50 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <span>Return to Group</span>
               </button>
@@ -508,7 +513,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
             <button
               onClick={onStartNewBill}
-              className="flex-1 py-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] border border-black/5 dark:border-transparent hover:bg-slate-50 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+              className="flex-1 py-3 rounded-[20px] bg-white dark:bg-[#1c1c1e] border border-black/5 dark:border-transparent hover:bg-slate-50 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm"
             >
               <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
               <span>Start New Bill</span>
