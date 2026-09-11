@@ -1,96 +1,54 @@
-# SplitBill — Mobile-First Restaurant Bill Splitter
+# 🧾 SplitBill
+> **Free, private & open bill splitter. Zero data collected.**
 
-> "Split your bill. No signup. No server. No cost."
+SplitBill is a progressive, offline-first web application designed to make splitting restaurant bills and group expenses as frictionless as possible. It features a fully local, WebAssembly-powered receipt scanner, multi-currency support, and mathematically rigorous debt-minimization algorithms for group trips—all without requiring a server or an account.
 
-SplitBill is a production-grade, 100% client-side web application and Progressive Web App (PWA) built to split restaurant bills fairly, accurately, and with zero headache.
+![SplitBill Hero](https://splitbill.techfliq.com/apple-touch-icon.png)
 
----
+## ✨ Features
 
-## 🔒 Privacy & Operating Guarantees
+- **100% Offline & Private**: Everything runs locally on your device. Receipts are processed on your browser using Tesseract.js (WebAssembly) and data is stored in IndexedDB. Nothing is ever sent to a server.
+- **Smart Receipt Scanning**: Take a picture of your receipt and tap to assign items to friends. 
+- **Global i18n & Multi-Currency**: Fully localized into 16 languages and regions. Instantly switches currency and language via instantaneous SPA routing.
+- **Group Trips**: Track multi-bill expenses and use the built-in debt-minimization algorithm to figure out exactly "who owes who" with the fewest number of transactions.
+- **PWA (Progressive Web App)**: Installable on iOS and Android. Works perfectly on airplane mode or in basements with zero reception.
 
-1. **Zero Cost**: Completely free to operate forever.
-2. **Zero Backend**: No backend server, no database server, and no cloud runtime required.
-3. **Zero Tracking**: No user registration, no passwords, no analytics, no ads, and no cookies.
-4. **Local OCR**: Receipts are processed directly in your browser using WebAssembly OCR. Images are never uploaded to any remote server.
-5. **Private Storage**: Stored locally in IndexedDB on your device. Temporary bills automatically expire in 7 days unless pinned with "Keep Permanently".
-6. **Data Portability**: Full JSON backup export and safe import with prototype pollution guards.
+## 🚀 Getting Started
 
----
+### Prerequisites
+- Node.js (v18+)
 
-## 🚀 Key Features
+### Installation
+1. Clone the repository
+   ```bash
+   git clone https://github.com/aloysiuspattath/splitbill.git
+   cd splitbill
+   ```
+2. Install dependencies
+   ```bash
+   npm install
+   ```
+3. Start the development server
+   ```bash
+   npm run dev
+   ```
 
-- **Local Receipt OCR**: Snap a photo or upload an image to extract items, quantities, prices, taxes, and totals directly on-device.
-- **Manual Bill Entry**: Fast, streamlined entry with full quantity and unit price support.
-- **Unlimited Eaters**: Friendly avatars, color badges, and safe deletion guards.
-- **Flexible Item Splitting**:
-  - Assign to 1 person
-  - Split equally among multiple friends
-  - Split by custom percentages (with 100% total validation)
-  - Split by custom amounts (with item price validation)
-  - Supports duplicate item names as distinct line items (e.g. separate drinks)
-- **Taxes & Counter Payment**:
-  - Percentage taxes (e.g. CGST 2.5% + SGST 2.5%, VAT) or fixed taxes.
-  - Automatic discount computation: enter what you actually paid at the counter (e.g. printed ₹1,720 vs paid ₹1,411).
-  - Proportional, equal, or custom discount allocation.
-  - Optional tip / gratuity allocation.
-- **Deterministic Rounding Engine**:
-  - All internal calculations performed in integer smallest units (paise/cents).
-  - Largest Remainder (Hare-Niemeyer) algorithm guarantees `SUM(person shares) === actual amount paid` to the exact single paisa with zero discrepancy.
-- **Export & Sharing**:
-  - One-tap WhatsApp / SMS clean text summary.
-  - Web Share API integration.
-  - Download as high-resolution image ticket.
-  - Browser-generated PDF receipt with itemized breakdown.
-  - JSON export & import.
-- **PWA & Offline Capable**: Works offline after initial load with service worker caching.
-- **Dark Mode**: Supports Light, Dark, and System preference.
-- **Multi-Currency**: INR (₹), USD ($), EUR (€), GBP (£), AED, SGD, AUD, CAD, JPY.
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework**: React 18 + TypeScript + Vite
-- **Styling**: Tailwind CSS (mobile-first, iOS-inspired card styling)
-- **Icons**: Lucide React
-- **Local Storage**: IndexedDB via `idb`
-- **Client-Side OCR**: `tesseract.js` (lazy-loaded on demand)
-- **PDF Generation**: `jspdf` + `jspdf-autotable`
-- **Image Generation**: `html-to-image`
-- **PWA**: `vite-plugin-pwa`
-- **Testing**: `vitest`
-
----
-
-## 🏃 Getting Started Locally
-
+### Building for Production
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Run local development server
-npm run dev
-
-# 3. Run automated calculation tests
-npm test
-
-# 4. Build production static bundle
 npm run build
 ```
+This will compile the React app, generate the Service Worker for offline capability, and run the `generate-regions.js` script to statically render all internationalized HTML entry points for maximum SEO.
+
+## 🤝 Support the Project
+
+SplitBill is offered 100% free with no ads and no tracking. If you find it useful, consider buying the creator a coffee to help cover domain and hosting costs!
+
+<a href="https://buymeacoffee.com/aloyziuz" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+## 📄 License
+This project is legally protected under the **GNU General Public License v3.0 (GPLv3)**. 
+
+If you fork, modify, or distribute this software, you **must** release your modified version as open-source under the same GPLv3 license. This ensures the tool remains forever free and protects user privacy from closed-source corporate exploitation. See the `LICENSE` file for more details.
 
 ---
-
-## ☁️ Cloudflare Pages Deployment
-
-Because SplitBill has zero backend and builds into pure static assets, it can be deployed to Cloudflare Pages for free:
-
-1. Push this repository to GitHub or GitLab.
-2. In the Cloudflare Dashboard, go to **Workers & Pages** → **Create application** → **Pages**.
-3. Connect your repository.
-4. Set the build settings:
-   - **Framework preset**: `Vite`
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-5. Click **Save and Deploy**.
-
-Your app is now live worldwide with zero server costs!
+*Crafted with ❤️ by Aloysius Pattath*

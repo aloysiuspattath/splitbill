@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { Github, Linkedin, Instagram, ShieldCheck, Heart } from 'lucide-react';
+import React from 'react';
+import { Github, Linkedin, Instagram, ShieldCheck, Heart, Coffee } from 'lucide-react';
 import { RegionDropdown } from './RegionDropdown';
 import { useTranslation } from 'react-i18next';
 
@@ -41,6 +41,18 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
 
         {/* Social Icons Bar (Touch-friendly 44x44px buttons for 100 a11y score) */}
         <div className="flex items-center justify-center gap-3">
+          {/* Buy Me a Coffee */}
+          <a
+            href="https://buymeacoffee.com/aloyziuz"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Buy Aloysius a Coffee"
+            className="w-11 h-11 rounded-2xl bg-[#FFDD00] text-[#000000] hover:scale-105 hover:bg-[#FFEA4D] border border-black/5 shadow-2xs hover:shadow-md flex items-center justify-center transition-all active:scale-95"
+            title="Buy me a coffee"
+          >
+            <Coffee className="w-5 h-5" />
+          </a>
+
           {/* GitHub */}
           <a
             href="https://github.com/aloysiuspattath"
