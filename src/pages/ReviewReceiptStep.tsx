@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Plus, Trash2, Edit3, ArrowRight, Store, Calendar, Check, AlertCircle, Scissors } from 'lucide-react';
 import { BillItem, CurrencyCode, BillCategory, BILL_CATEGORIES, Person } from '../types';
 import { formatMoney, toPaise, fromPaise } from '../utils/currency';
@@ -150,96 +150,97 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
   return (
     <div className="max-w-md lg:max-w-5xl mx-auto px-4 py-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:items-start">
       <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-24 mb-6 lg:mb-0">
-      {/* Group Trip Banner */}
-      {groupName && (
-        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-700 text-white flex items-center justify-between gap-3 shadow-md animate-fadeIn">
-          <div className="min-w-0">
-            <span className="text-[10px] font-black uppercase tracking-wider text-brand-200 block">
-              Group Trip Bill
+        <div className="bg-gradient-to-br from-brand-50 to-indigo-50 dark:from-brand-950/40 dark:to-indigo-950/40 p-6 rounded-[32px] border border-brand-100/50 dark:border-brand-900/50 shadow-sm relative overflow-hidden">
+          {/* Decorative background element */}
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-brand-500/10 blur-2xl pointer-events-none" />
+          
+          <div className="relative">
+            <span className="inline-block px-3 py-1 bg-white/60 dark:bg-black/40 rounded-full text-[10px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-3 backdrop-blur-md border border-white/40 dark:border-white/5">
+              {groupName ? `Step 1 of 4 • ${groupName}` : 'Step 1 of 4'}
             </span>
-            <p className="text-sm font-extrabold truncate">
-              {groupName} • {people?.length || 0} members
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+              Your Receipt
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 font-medium leading-relaxed">
+              Confirm your items before we split the bill. You can edit names, prices, quantities, or add missing items.
             </p>
-          </div>
-          {onQuickSaveToGroup && items.length > 0 && (
-            <button
-              onClick={onQuickSaveToGroup}
-              className="px-3 py-1.5 rounded-xl bg-white text-brand-600 font-black text-xs shadow-sm hover:bg-brand-50 active:scale-95 transition-all flex items-center gap-1 shrink-0"
-            >
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
-              <span>Split Equally & Add</span>
-            </button>
-          )}
-        </div>
-      )}
 
-      {/* Step Header */}
-      <div>
-        <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest block mb-1">
-          {groupName ? `Step 1 of 4 • ${groupName}` : 'Step 1 of 4'}
-        </span>
-        <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-          Your Receipt
-        </h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-          Confirm your items before we split the bill
-        </p>
-      </div>
-
-      {/* Intelligent Scan Confidence Summary */}
-      {(ocrNotice || suspiciousCount > 0) && (
-        <div className="p-4 rounded-[24px] bg-slate-50 dark:bg-[#222225] border border-slate-200/80 dark:border-slate-800 space-y-2.5 shadow-sm text-xs">
-          <div className="flex items-center justify-between">
-            <span className="font-extrabold uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">
-              Receipt Scan Summary
-            </span>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-              Scan Complete
-            </span>
-          </div>
-
-          <div className="space-y-1.5 text-slate-700 dark:text-slate-300">
-            <div className="flex items-center gap-2">
-              {restaurantName ? (
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  <span>Restaurant: <strong className="text-slate-900 dark:text-white">{restaurantName}</strong></span>
+            {/* Group Trip Banner */}
+            {groupName && (
+              <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-md animate-fadeIn">
+                <span className="text-[10px] font-black uppercase tracking-wider text-brand-200 block mb-1">
+                  Group Trip Bill
                 </span>
-              ) : (
-                <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span>Restaurant name not detected (type above)</span>
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 stroke-[3]" />
-                <span>{items.length} {items.length === 1 ? 'item' : 'items'} detected</span>
-              </span>
-            </div>
-
-            {suspiciousCount > 0 ? (
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-300 font-bold mt-1">
-                <div className="flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 text-amber-600" />
-                  <span>{suspiciousCount} {suspiciousCount === 1 ? 'item needs' : 'items need'} checking</span>
-                </div>
-                <span className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                  Highlighted below
-                </span>
+                <p className="text-sm font-extrabold truncate mb-3">
+                  {groupName} • {people?.length || 0} members
+                </p>
+                {onQuickSaveToGroup && items.length > 0 && (
+                  <button
+                    onClick={onQuickSaveToGroup}
+                    className="w-full py-2.5 rounded-xl bg-white text-brand-600 font-black text-xs shadow-sm hover:bg-brand-50 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    <span>Split Equally & Add to Group</span>
+                  </button>
+                )}
               </div>
-            ) : (
-              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold">
-                <Check className="w-3.5 h-3.5 stroke-[3]" />
-                <span>All items have valid prices and names</span>
+            )}
+
+            {/* Intelligent Scan Confidence Summary */}
+            {(ocrNotice || suspiciousCount > 0) && (
+              <div className="mt-5 p-4 rounded-[24px] bg-white/80 dark:bg-black/40 backdrop-blur-sm border border-white/50 dark:border-white/10 space-y-2.5 shadow-sm text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">
+                    Receipt Scan Summary
+                  </span>
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                    Scan Complete
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-2">
+                    {restaurantName ? (
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>Restaurant: <strong className="text-slate-900 dark:text-white">{restaurantName}</strong></span>
+                      </span>
+                    ) : (
+                      <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        <span>Restaurant name not detected</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>{items.length} {items.length === 1 ? 'item' : 'items'} detected</span>
+                    </span>
+                  </div>
+
+                  {suspiciousCount > 0 ? (
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-300 font-bold mt-1">
+                      <div className="flex items-center gap-1.5">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0 text-amber-600" />
+                        <span>{suspiciousCount} {suspiciousCount === 1 ? 'item needs' : 'items need'} checking</span>
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                        Highlighted below
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold">
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>All items have valid prices and names</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </div>
-      )}
-
       </div>
       <div className="lg:col-span-7 space-y-5">
       {/* Modern Receipt Card */}

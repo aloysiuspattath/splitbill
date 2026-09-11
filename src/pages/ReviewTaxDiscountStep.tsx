@@ -88,19 +88,27 @@ export const ReviewTaxDiscountStep: React.FC<ReviewTaxDiscountStepProps> = ({
   };
 
   return (
-    <div className="max-w-md lg:max-w-3xl mx-auto px-4 py-4 space-y-4">
-      {/* Step Header */}
-      <div>
-        <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest block mb-1">
-          Step 4 of 4
-        </span>
-        <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-          Taxes & Discounts
-        </h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-          Set taxes, discounts, or enter the exact amount paid
-        </p>
+    <div className="max-w-md lg:max-w-5xl mx-auto px-4 py-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:items-start">
+      <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-24 mb-6 lg:mb-0">
+        <div className="bg-gradient-to-br from-brand-50 to-indigo-50 dark:from-brand-950/40 dark:to-indigo-950/40 p-6 rounded-[32px] border border-brand-100/50 dark:border-brand-900/50 shadow-sm relative overflow-hidden">
+          {/* Decorative background element */}
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-brand-500/10 blur-2xl pointer-events-none" />
+          
+          <div className="relative">
+            <span className="inline-block px-3 py-1 bg-white/60 dark:bg-black/40 rounded-full text-[10px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-3 backdrop-blur-md border border-white/40 dark:border-white/5">
+              Step 4 of 4
+            </span>
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+              Taxes & Discounts
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 font-medium leading-relaxed">
+              Set taxes, discounts, or enter the exact amount paid. We'll proportionately distribute these costs across everyone's items.
+            </p>
+          </div>
+        </div>
       </div>
+
+      <div className="lg:col-span-7 space-y-4">
 
       {/* 1. Taxes Card */}
       <div className="bg-white dark:bg-[#1c1c1e] rounded-[32px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] border border-black/5 dark:border-transparent space-y-4">
@@ -537,6 +545,7 @@ export const ReviewTaxDiscountStep: React.FC<ReviewTaxDiscountStepProps> = ({
           <span>View Split Results</span>
           <ArrowRight className="w-4 h-4" />
         </button>
+      </div>
       </div>
     </div>
   );

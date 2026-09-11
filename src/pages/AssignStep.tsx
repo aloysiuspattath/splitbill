@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Check, Users, Percent, DollarSign, ArrowRight, AlertCircle, Sparkles, PieChart, Scissors, Minus, Plus } from 'lucide-react';
 import { BillItem, Person, SplitMode, CurrencyCode } from '../types';
 import { formatMoney, fromPaise, toPaise } from '../utils/currency';
@@ -174,43 +174,51 @@ export const AssignStep: React.FC<AssignStepProps> = ({
   return (
     <div className="max-w-md lg:max-w-6xl mx-auto px-4 py-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:items-start">
       <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24 mb-6 lg:mb-0">
-      {/* Step Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest block mb-1">
+      <div className="bg-gradient-to-br from-brand-50 to-indigo-50 dark:from-brand-950/40 dark:to-indigo-950/40 p-6 rounded-[32px] border border-brand-100/50 dark:border-brand-900/50 shadow-sm relative overflow-hidden">
+        {/* Decorative background element */}
+        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-brand-500/10 blur-2xl pointer-events-none" />
+        
+        <div className="relative">
+          <span className="inline-block px-3 py-1 bg-white/60 dark:bg-black/40 rounded-full text-[10px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-3 backdrop-blur-md border border-white/40 dark:border-white/5">
             Step 3 of 4
           </span>
-          <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
             Assign Items
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-            Tap friends to assign who ate each item
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 font-medium leading-relaxed">
+            Tap friends to assign who ate each item. You can assign multiple people and customize the exact split below each item.
           </p>
-        </div>
 
-        {items.length > 1 && people.length > 1 && (
-          <button
-            onClick={handleAssignAllToEveryone}
-            className="px-3 py-1.5 rounded-xl bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 text-xs font-bold flex items-center gap-1 hover:bg-brand-100 transition-colors shadow-sm"
-            title="Split all items equally with everyone"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Split All Equal</span>
-          </button>
-        )}
+          {items.length > 1 && people.length > 1 && (
+            <div className="mt-6 pt-6 border-t border-brand-200/40 dark:border-brand-800/40">
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Quick Actions</p>
+              <button
+                onClick={handleAssignAllToEveryone}
+                className="w-full py-3.5 rounded-2xl bg-white dark:bg-[#1c1c1e] text-brand-600 dark:text-brand-400 font-bold flex items-center justify-center gap-2 hover:bg-brand-50 hover:shadow-sm dark:hover:bg-brand-900/30 transition-all border border-black/5 dark:border-white/5 active:scale-[0.98]"
+                title="Split all items equally with everyone"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Split All Items Equally</span>
+              </button>
+            </div>
+          )}
+          
+          {/* Unassigned Warning Notice inside the card */}
+          {unassignedCount > 0 && (
+            <div className="mt-4 p-3.5 rounded-2xl bg-white dark:bg-[#1c1c1e] border border-amber-200 dark:border-amber-800/60 flex items-start gap-3 shadow-sm">
+              <div className="mt-0.5 bg-amber-100 dark:bg-amber-950/60 p-1.5 rounded-full text-amber-600 dark:text-amber-400">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-amber-800 dark:text-amber-300">Requires Attention</p>
+                <p className="text-[11px] font-medium text-amber-700 dark:text-amber-400 mt-0.5">
+                  <strong>{unassignedCount}</strong> {unassignedCount === 1 ? 'item is' : 'items are'} currently unassigned.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* Unassigned Warning Notice */}
-      {unassignedCount > 0 && (
-        <div className="p-3 rounded-[20px] bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>
-              <strong>{unassignedCount}</strong> {unassignedCount === 1 ? 'item is' : 'items are'} unassigned.
-            </span>
-          </div>
-        </div>
-      )}
 
       </div>
       <div className="lg:col-span-8 space-y-4">

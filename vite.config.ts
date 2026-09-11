@@ -101,6 +101,7 @@ export default defineConfig({
     target: 'es2020',
     cssCodeSplit: true,
     chunkSizeWarningLimit: 600,
+    modulePreload: false,
     rollupOptions: {
       output: {
         manualChunks: {
