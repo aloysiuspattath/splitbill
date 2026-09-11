@@ -2,6 +2,7 @@
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/index.css';
+import './i18n';
 import { registerSW } from 'virtual:pwa-register';
 import { cleanupReloadParam } from './utils/cacheManager';
 import { checkForAppUpdate } from './utils/versionCheck';
@@ -64,4 +65,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>
 );
+
 
