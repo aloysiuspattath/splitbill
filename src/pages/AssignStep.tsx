@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Check, Users, Percent, DollarSign, ArrowRight, AlertCircle, Sparkles, PieChart, Scissors, Minus, Plus } from 'lucide-react';
 import { BillItem, Person, SplitMode, CurrencyCode } from '../types';
 import { formatMoney, fromPaise, toPaise } from '../utils/currency';
@@ -10,6 +10,7 @@ interface AssignStepProps {
   onUpdateItems: (items: BillItem[]) => void;
   onContinue: () => void;
   onBack: () => void;
+  ocrPreviewUrl?: string;
 }
 
 export const AssignStep: React.FC<AssignStepProps> = ({
@@ -694,3 +695,4 @@ export const AssignStep: React.FC<AssignStepProps> = ({
     </div>
   );
 };
+

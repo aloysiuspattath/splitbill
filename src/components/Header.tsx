@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
   const { t } = useTranslation();
   return (
     <header className="sticky top-0 z-30 bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-black/5 dark:border-transparent transition-colors duration-300">
-      <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="max-w-md lg:max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
         
         {/* Brand (Simplified for Mobile) */}
         <button

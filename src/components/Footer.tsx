@@ -22,7 +22,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
 
   return (
     <footer className="w-full mt-auto pt-10 pb-8 px-4 border-t border-slate-200/60 dark:border-slate-800/80 bg-slate-50/50 dark:bg-black/20 text-center transition-colors">
-      <div className="max-w-md mx-auto flex flex-col items-center space-y-4">
+      <div className="max-w-md lg:max-w-5xl mx-auto flex flex-col items-center space-y-4">
         
         {/* Creator Attribution */}
         <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">

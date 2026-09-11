@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Plus, Trash2, ArrowRight, Percent, DollarSign, Heart, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Bill, TaxItem, DiscountConfig, DiscountType, DiscountAllocationMethod, CurrencyCode, CalculatedBillResult } from '../types';
 import { formatMoney, fromPaise, toPaise } from '../utils/currency';
@@ -541,3 +541,4 @@ export const ReviewTaxDiscountStep: React.FC<ReviewTaxDiscountStepProps> = ({
     </div>
   );
 };
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, X, UserPlus, ArrowRight, AlertTriangle } from 'lucide-react';
 import { Person, BillItem } from '../types';
@@ -336,3 +336,4 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
     </div>
   );
 };
+

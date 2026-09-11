@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Plus, Trash2, Edit3, ArrowRight, Store, Calendar, Check, AlertCircle, Scissors } from 'lucide-react';
 import { BillItem, CurrencyCode, BillCategory, BILL_CATEGORIES, Person } from '../types';
 import { formatMoney, toPaise, fromPaise } from '../utils/currency';
@@ -22,6 +22,7 @@ interface ReviewReceiptStepProps {
   onContinue: () => void;
   onBack: () => void;
   ocrNotice?: string;
+  ocrPreviewUrl?: string;
 }
 
 export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
@@ -574,3 +575,4 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
     </div>
   );
 };
+

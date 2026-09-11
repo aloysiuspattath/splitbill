@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+﻿import { useState, useEffect, lazy, Suspense } from 'react';
 import { Bill, CalculatedBillResult, Group, CurrencyCode, Person } from './types';
 import { useTranslation } from 'react-i18next';
 import { Header } from './components/Header';
@@ -448,6 +448,7 @@ export function App() {
               onUpdatePaidBy={paidBy => setBill(prev => ({ ...prev, paidBy }))}
               groupName={bill.groupId && activeGroup ? activeGroup.name : undefined}
               onQuickSaveToGroup={bill.groupId ? handleQuickSaveGroupBill : undefined}
+              ocrPreviewUrl={ocrPreviewUrl}
               onContinue={() => goToStep(2)}
               onBack={() => {
                 if (bill.groupId) {
@@ -636,5 +637,6 @@ export function App() {
   );
 }
 export default App;
+
 
 

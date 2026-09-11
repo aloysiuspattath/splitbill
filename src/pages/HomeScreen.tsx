@@ -140,8 +140,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         className="hidden"
       />
 
-      {/* Hero Visual: 3D Bill Illustration matching the reference mockup */}
-      <div className="relative w-56 h-56 mb-4 flex items-center justify-center">
+      {/* --- DESKTOP LEFT COLUMN --- */}
+      <div className="flex flex-col items-center lg:items-start max-w-sm lg:w-1/2 lg:pl-10">
+        {/* Hero Visual: 3D Bill Illustration matching the reference mockup */}
+        <div className="relative w-56 h-56 mb-4 flex items-center justify-center">
         {/* Soft atmospheric gradient blob behind */}
         <div className="absolute inset-0 bg-gradient-to-tr from-brand-400/20 via-blue-500/20 to-purple-400/20 rounded-full blur-2xl transform -scale-95 animate-pulse" />
 
@@ -188,12 +190,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {t('homeScreen.heroSubtitle')}
       </p>
 
-      <p className="text-xs sm:text-base text-slate-600 dark:text-slate-300 max-w-xs mb-6 font-medium">
+      <p className="text-xs sm:text-base text-slate-600 dark:text-slate-300 max-w-xs lg:max-w-md mb-6 font-medium lg:text-left">
         {t('homeScreen.heroDescription')}
       </p>
+      </div> {/* End Left Column */}
 
-      {/* Main Action Buttons */}
-      <div className="w-full space-y-3 mb-5">
+      {/* --- DESKTOP RIGHT COLUMN --- */}
+      <div className="flex flex-col items-center w-full max-w-sm lg:w-1/2 lg:pr-10">
+        {/* Main Action Buttons */}
+        <div className="w-full space-y-3 mb-5">
         {/* Scan with Camera Button */}
         <button
           onClick={() => cameraInputRef.current?.click()}
@@ -331,6 +336,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <span>{t('homeScreen.checkUpdates')}</span>
         </button>
       </div>
+      </div> {/* End Right Column */}
     </div>
   );
 };

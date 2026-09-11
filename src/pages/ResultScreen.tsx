@@ -106,7 +106,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-4 space-y-5">
+    <div className="max-w-md sm:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-5">
       {/* Group Action Banner */}
       {bill.groupId && groupName && (
         <div className="p-4 rounded-3xl bg-gradient-to-r from-brand-600 to-brand-700 text-white flex items-center justify-between gap-3 shadow-lg animate-fadeIn">
