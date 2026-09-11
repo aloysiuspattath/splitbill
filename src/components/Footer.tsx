@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import { Github, Linkedin, Instagram, ShieldCheck, Heart } from 'lucide-react';
+import { RegionDropdown } from './RegionDropdown';
 
 interface FooterProps {
   onOpenPrivacy?: () => void;
@@ -23,9 +24,9 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
         
         {/* Creator Attribution */}
         <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-          <span>Crafted with</span>
+          <span className="text-slate-300 dark:text-slate-600">|</span>
           <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 animate-pulse" />
-          <span>by</span>
+          <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="https://github.com/aloysiuspattath"
             target="_blank"
@@ -83,14 +84,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           >
             Receipt Scanner
           </a>
-          <span>â€¢</span>
+          <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="/splitwise-alternative.html"
             className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
           >
             Splitwise Alternative
           </a>
-          <span>â€¢</span>
+          <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="/guide/"
             onClick={(e) => { e.preventDefault(); handleOpenTab('guide'); }}
@@ -98,7 +99,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           >
             Guide
           </a>
-          <span>â€¢</span>
+          <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="/faq/"
             onClick={(e) => { e.preventDefault(); handleOpenTab('faq'); }}
@@ -106,7 +107,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           >
             FAQ
           </a>
-          <span>â€¢</span>
+          <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="/about/"
             onClick={(e) => { e.preventDefault(); handleOpenTab('about'); }}
@@ -114,7 +115,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           >
             About Us
           </a>
-          <span>â€¢</span>
+          <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="/terms/"
             onClick={(e) => { e.preventDefault(); handleOpenTab('terms'); }}
@@ -122,16 +123,16 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           >
             Terms
           </a>
-          <span>â€¢</span>
+          <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="/privacy/"
             onClick={(e) => { e.preventDefault(); handleOpenTab('privacy'); }}
             className="hover:text-brand-600 dark:hover:text-brand-400 font-medium inline-flex items-center gap-1 transition-colors"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Privacy</span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
           </a>
-          <span>â€¢</span>
+          <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="/sitemap.xml"
             target="_blank"
@@ -143,24 +144,17 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
         </div>
         
         {/* Regional Links for SEO */}
-        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] text-slate-400/80 dark:text-slate-500/80 mt-2 max-w-[280px] sm:max-w-none">
-          <span>Regions:</span>
-          <a href="/in/" className="hover:text-slate-600 dark:hover:text-slate-300">India</a>
-          <a href="/us/" className="hover:text-slate-600 dark:hover:text-slate-300">US</a>
-          <a href="/uk/" className="hover:text-slate-600 dark:hover:text-slate-300">UK</a>
-          <a href="/au/" className="hover:text-slate-600 dark:hover:text-slate-300">Australia</a>
-          <a href="/ca/" className="hover:text-slate-600 dark:hover:text-slate-300">Canada</a>
-          <a href="/sg/" className="hover:text-slate-600 dark:hover:text-slate-300">Singapore</a>
-          <a href="/eu/" className="hover:text-slate-600 dark:hover:text-slate-300">Europe</a>
-          <a href="/ae/" className="hover:text-slate-600 dark:hover:text-slate-300">UAE</a>`n          <a href="/es/" className="hover:text-slate-600 dark:hover:text-slate-300">España</a>`n          <a href="/mx/" className="hover:text-slate-600 dark:hover:text-slate-300">México</a>`n          <a href="/br/" className="hover:text-slate-600 dark:hover:text-slate-300">Brasil</a>`n          <a href="/de/" className="hover:text-slate-600 dark:hover:text-slate-300">Deutschland</a>`n          <a href="/jp/" className="hover:text-slate-600 dark:hover:text-slate-300">日本</a>`n          <a href="/id/" className="hover:text-slate-600 dark:hover:text-slate-300">Indonesia</a>`n          <a href="/fr/" className="hover:text-slate-600 dark:hover:text-slate-300">France</a>`n          <a href="/it/" className="hover:text-slate-600 dark:hover:text-slate-300">Italia</a>
-        </div>
+                <RegionDropdown />
 
         {/* Copyright */}
         <p className="text-[11px] text-slate-400 dark:text-slate-500">
-          Â© {currentYear} SplitBill â€¢ Free, private &amp; open bill splitter. Zero data collected.
+          (c) {currentYear} SplitBill | Free, private &amp; open bill splitter. Zero data collected.
         </p>
       </div>
     </footer>
   );
 };
+
+
+
 
