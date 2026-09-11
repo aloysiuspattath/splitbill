@@ -161,7 +161,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
                 <RegionDropdown />
 
         {/* Copyright */}
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
           (c) {currentYear} SplitBill | Free, private &amp; open bill splitter. Zero data collected.
         </p>
       </div>

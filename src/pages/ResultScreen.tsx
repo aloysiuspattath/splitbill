@@ -114,9 +114,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
             <span className="text-[10px] font-black uppercase tracking-wider text-brand-200 block">
               Trip Expense • {groupName}
             </span>
-            <h3 className="font-extrabold text-sm sm:text-base truncate">
+            <h2 className="font-extrabold text-sm sm:text-base truncate">
               Ready to add this bill!
-            </h3>
+            </h2>
           </div>
           <button
             onClick={() => onSaveBill(true)}

@@ -469,9 +469,9 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
               onSubmit={handleAddItem}
               className="p-3.5 rounded-[20px] bg-brand-50 dark:bg-black/30 border border-brand-200/50 dark:border-transparent space-y-2 animate-fadeIn mt-2"
             >
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 mb-1 pl-1">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400 mb-1 pl-1">
                 New Item
-              </h4>
+              </h3>
               <input
                 type="text"
                 value={newName}

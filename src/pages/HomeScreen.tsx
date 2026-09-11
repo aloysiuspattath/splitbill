@@ -113,7 +113,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="w-24 h-24 rounded-3xl bg-white/20 border-2 border-dashed border-white flex items-center justify-center mb-4 animate-bounce">
             <Upload className="w-12 h-12 text-white" />
           </div>
-          <h3 className="text-2xl font-black mb-1">{t('homeScreen.dropReceiptTitle')}</h3>
+          <h2 className="text-2xl font-black mb-1">{t('homeScreen.dropReceiptTitle')}</h2>
           <p className="text-sm font-medium text-white/80 text-center max-w-xs">
             {t('homeScreen.dropReceiptSubtitle')}
           </p>
@@ -249,9 +249,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+            <h2 className="text-sm font-extrabold text-slate-900 dark:text-white">
               {t('homeScreen.demoRestaurantName')}
-            </h3>
+            </h2>
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-0.5">
               {t('homeScreen.demoRestaurantDetails')}
             </p>
@@ -275,9 +275,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               🌴
             </div>
             <div>
-              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <h2 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <span>{t('homeScreen.groupsTitle')}</span>
-              </h3>
+              </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 {t('homeScreen.groupsSubtitle')}
               </p>

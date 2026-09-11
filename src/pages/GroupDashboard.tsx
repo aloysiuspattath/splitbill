@@ -258,7 +258,7 @@ export const GroupDashboard: React.FC<GroupDashboardProps> = ({
             {bills.length === 0 ? (
               <div className="text-center py-12 px-6 bg-white dark:bg-[#1c1c1e] rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 mt-2">
                 <Receipt className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
-                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base mb-1">No bills added yet</h3>
+                <h2 className="font-bold text-slate-800 dark:text-slate-200 text-base mb-1">No bills added yet</h2>
                 <p className="text-xs text-slate-500 mb-5 max-w-xs mx-auto">
                   Scan a restaurant receipt, add a quick cab fare, or record drinks paid by friends.
                 </p>
