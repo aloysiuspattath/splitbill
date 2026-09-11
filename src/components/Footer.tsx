@@ -77,46 +77,60 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
 
         {/* Navigation & Documentation Links */}
         <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-          <button
-            type="button"
-            onClick={() => handleOpenTab('guide')}
+          <a
+            href="/receipt-scanner.html"
+            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+          >
+            Receipt Scanner
+          </a>
+          <span>•</span>
+          <a
+            href="/splitwise-alternative.html"
+            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
+          >
+            Splitwise Alternative
+          </a>
+          <span>•</span>
+          <a
+            href="/guide/"
+            onClick={(e) => { e.preventDefault(); handleOpenTab('guide'); }}
             className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
           >
             Guide
-          </button>
+          </a>
           <span>•</span>
-          <button
-            type="button"
-            onClick={() => handleOpenTab('faq')}
+          <a
+            href="/faq/"
+            onClick={(e) => { e.preventDefault(); handleOpenTab('faq'); }}
             className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
           >
             FAQ
-          </button>
+          </a>
           <span>•</span>
-          <button
-            type="button"
-            onClick={() => handleOpenTab('about')}
+          <a
+            href="/about/"
+            onClick={(e) => { e.preventDefault(); handleOpenTab('about'); }}
             className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
           >
             About Us
-          </button>
+          </a>
           <span>•</span>
-          <button
-            type="button"
-            onClick={() => handleOpenTab('terms')}
+          <a
+            href="/terms/"
+            onClick={(e) => { e.preventDefault(); handleOpenTab('terms'); }}
             className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
           >
             Terms
-          </button>
+          </a>
           <span>•</span>
-          <button
-            type="button"
-            onClick={() => handleOpenTab('privacy')}
+          <a
+            href="/privacy/"
+            onClick={(e) => { e.preventDefault(); handleOpenTab('privacy'); }}
             className="hover:text-brand-600 dark:hover:text-brand-400 font-medium inline-flex items-center gap-1 transition-colors"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
             <span>Privacy</span>
-          </button>
+          </a>
           <span>•</span>
           <a
             href="/sitemap.xml"
@@ -126,15 +140,19 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
           >
             Sitemap
           </a>
-          <span>•</span>
-          <a
-            href="https://techfliq.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
-          >
-            TechFliq
-          </a>
+        </div>
+        
+        {/* Regional Links for SEO */}
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] text-slate-400/80 dark:text-slate-500/80 mt-2">
+          <span>Regions:</span>
+          <a href="/in/" className="hover:text-slate-600 dark:hover:text-slate-300">India</a>
+          <a href="/us/" className="hover:text-slate-600 dark:hover:text-slate-300">US</a>
+          <a href="/uk/" className="hover:text-slate-600 dark:hover:text-slate-300">UK</a>
+          <a href="/au/" className="hover:text-slate-600 dark:hover:text-slate-300">Australia</a>
+          <a href="/ca/" className="hover:text-slate-600 dark:hover:text-slate-300">Canada</a>
+          <a href="/sg/" className="hover:text-slate-600 dark:hover:text-slate-300">Singapore</a>
+          <a href="/eu/" className="hover:text-slate-600 dark:hover:text-slate-300">Europe</a>
+          <a href="/ae/" className="hover:text-slate-600 dark:hover:text-slate-300">UAE</a>
         </div>
 
         {/* Copyright */}
