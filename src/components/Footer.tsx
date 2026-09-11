@@ -1,6 +1,7 @@
 ﻿import React from 'react';
 import { Github, Linkedin, Instagram, ShieldCheck, Heart } from 'lucide-react';
 import { RegionDropdown } from './RegionDropdown';
+import { useTranslation } from 'react-i18next';
 
 interface FooterProps {
   onOpenPrivacy?: () => void;
@@ -8,6 +9,7 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => {
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
 
   const handleOpenTab = (tab: 'guide' | 'faq' | 'about' | 'terms' | 'privacy') => {
@@ -82,14 +84,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
             href="/receipt-scanner.html"
             className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
           >
-            Receipt Scanner
+            {t('footer.receiptScanner', 'Receipt Scanner')}
           </a>
           <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
             href="/splitwise-alternative.html"
             className="hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors"
           >
-            Splitwise Alternative
+            {t('footer.splitwiseAlt', 'Splitwise Alternative')}
           </a>
           <span className="text-slate-300 dark:text-slate-600">|</span>
           <a
@@ -154,6 +156,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenPrivacy, onOpenInfo }) => 
     </footer>
   );
 };
+
 
 
 
