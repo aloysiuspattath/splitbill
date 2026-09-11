@@ -542,43 +542,41 @@ export const ReviewReceiptStep: React.FC<ReviewReceiptStepProps> = ({
         </div>
       </div>
 
-      </div>
-      {/* Bottom Sticky Action Buttons */}
-      <div className="lg:col-span-12">
-      <div className="pt-2 flex flex-col gap-2.5">
-        {groupName && onQuickSaveToGroup && items.length > 0 && (
-          <button
-            onClick={onQuickSaveToGroup}
-            className="w-full py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-sm shadow-[0_8px_20px_rgb(37,99,235,0.3)] flex items-center justify-center gap-2 active:scale-95 transition-all"
-          >
-            <Check className="w-5 h-5 stroke-[2.5]" />
-            <span>Split Equally & Add to {groupName}</span>
-          </button>
-        )}
+        {/* Bottom Sticky Action Buttons */}
+        <div className="pt-2 flex flex-col gap-2.5">
+          {groupName && onQuickSaveToGroup && items.length > 0 && (
+            <button
+              onClick={onQuickSaveToGroup}
+              className="w-full py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-sm shadow-[0_8px_20px_rgb(37,99,235,0.3)] flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              <Check className="w-5 h-5 stroke-[2.5]" />
+              <span>Split Equally & Add to {groupName}</span>
+            </button>
+          )}
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="px-5 py-3.5 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm border border-black/5 dark:border-transparent hover:bg-slate-50 dark:hover:bg-[#2c2c2e] transition-colors"
-          >
-            {groupName ? 'Cancel' : 'Back'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onBack}
+              className="px-5 py-3.5 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm border border-black/5 dark:border-transparent hover:bg-slate-50 dark:hover:bg-[#2c2c2e] transition-colors shadow-sm"
+            >
+              {groupName ? 'Cancel' : 'Back'}
+            </button>
 
-          <button
-            disabled={items.length === 0}
-            onClick={onContinue}
-            className={`flex-1 py-3.5 px-6 rounded-[20px] font-bold text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95 transition-all ${
-              groupName && onQuickSaveToGroup
-                ? 'bg-slate-100 dark:bg-[#2c2c2e] hover:bg-slate-200 dark:hover:bg-[#38383a] text-slate-800 dark:text-slate-200'
-                : 'bg-brand-600 hover:bg-brand-700 text-white shadow-[0_8px_16px_rgb(37,99,235,0.25)]'
-            }`}
-          >
-            <span>{groupName ? 'Customize Item Splits' : 'Continue to Friends'}</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+            <button
+              disabled={items.length === 0}
+              onClick={onContinue}
+              className={`flex-1 py-3.5 px-6 rounded-[20px] font-bold text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95 transition-all ${
+                groupName && onQuickSaveToGroup
+                  ? 'bg-slate-100 dark:bg-[#2c2c2e] hover:bg-slate-200 dark:hover:bg-[#38383a] text-slate-800 dark:text-slate-200 shadow-sm'
+                  : 'bg-brand-600 hover:bg-brand-700 text-white shadow-[0_8px_16px_rgb(37,99,235,0.25)]'
+              }`}
+            >
+              <span>{groupName ? 'Customize Item Splits' : 'Continue to Friends'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };

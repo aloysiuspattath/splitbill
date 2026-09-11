@@ -686,26 +686,24 @@ export const AssignStep: React.FC<AssignStepProps> = ({
         })}
       </div>
 
-      </div>
-      {/* Navigation Buttons */}
-      <div className="lg:col-span-12">
-      <div className="pt-2 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="px-5 py-4 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 font-bold text-sm border border-black/5 dark:border-transparent hover:bg-slate-50"
-        >
-          Back
-        </button>
+        {/* Navigation Buttons */}
+        <div className="pt-2 flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="px-5 py-4 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 font-bold text-sm border border-black/5 dark:border-transparent hover:bg-slate-50 shadow-sm"
+          >
+            Back
+          </button>
 
-        <button
-          onClick={onContinue}
-          className="flex-1 py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-[0_8px_16px_rgb(37,99,235,0.25)] flex items-center justify-center gap-2 active:scale-95 transition-all"
-        >
-          <span>Continue to Taxes & Discounts</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+          <button
+            onClick={onContinue}
+            className="flex-1 py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-[0_8px_16px_rgb(37,99,235,0.25)] flex items-center justify-center gap-2 active:scale-95 transition-all"
+          >
+            <span>Continue to Taxes & Discounts</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-    </div>
     </div>
   );
 };
