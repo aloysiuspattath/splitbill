@@ -1,5 +1,6 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+﻿import { useState, useEffect, lazy, Suspense } from 'react';
 import { Bill, CalculatedBillResult, Group, CurrencyCode, Person } from './types';
+import { useTranslation } from 'react-i18next';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { StepIndicator } from './components/StepIndicator';
@@ -72,6 +73,17 @@ export const getEmptyBill = (): Bill => {
 };
 
 export function App() {
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).__REGION__?.lang) {
+      const langCode = (window as any).__REGION__.lang.split('-')[0];
+      if (['en', 'es', 'pt', 'de', 'ja', 'id', 'fr', 'it'].includes(langCode)) {
+        i18n.changeLanguage(langCode);
+      }
+    }
+  }, [i18n]);
+
   // Theme state
   const [isDark, setIsDark] = useState<boolean>(() => {
     const saved = localStorage.getItem('splitbill_theme');
@@ -591,3 +603,4 @@ export function App() {
   );
 }
 export default App;
+

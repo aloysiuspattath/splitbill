@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, X, UserPlus, ArrowRight, AlertTriangle } from 'lucide-react';
 import { Person, BillItem } from '../types';
 import { getRandomAvatar, AVATAR_EMOJIS, AVATAR_COLORS } from '../features/people/avatarHelper';
@@ -23,6 +24,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
   onContinue,
   onBack,
 }) => {
+  const { t } = useTranslation();
   const [nameInput, setNameInput] = useState('');
   const [upiInput, setUpiInput] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState(AVATAR_EMOJIS[0]);
@@ -36,7 +38,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
 
     // Check if name already exists
     if (people.some(p => p.name.toLowerCase() === cleanName.toLowerCase())) {
-      alert(`"${cleanName}" is already in the list.`);
+      alert(t('peopleStep.nameExistsAlert', { name: cleanName }));
       return;
     }
 
@@ -115,13 +117,13 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
       {/* Step Header */}
       <div>
         <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest block mb-1">
-          Step 2 of 4
+          {t('peopleStep.stepLabel')}
         </span>
         <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-          Who is Eating?
+          {t('peopleStep.title')}
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-          Add all friends who are sharing this bill
+          {t('peopleStep.subtitle')}
         </p>
       </div>
 
@@ -129,18 +131,18 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
       <div className="bg-white dark:bg-[#1c1c1e] rounded-[32px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] border border-black/5 dark:border-transparent space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            Friends Added ({people.length})
+            {t('peopleStep.friendsAdded')} ({people.length})
           </span>
           {people.length > 0 && (
             <span className="text-[11px] text-brand-600 font-semibold">
-              Tap (x) to remove
+              {t('peopleStep.tapToRemove')}
             </span>
           )}
         </div>
 
         {people.length === 0 ? (
           <div className="py-6 text-center text-slate-400 text-xs">
-            No friends added yet. Type a name below or tap a quick suggestion.
+            {t('peopleStep.noFriendsAdded')}
           </div>
         ) : (
           <div className={
@@ -161,7 +163,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
                   <button
                     onClick={() => handlePromptDelete(person)}
                     className={`absolute ${isList ? 'relative flex-shrink-0' : '-top-1.5 -right-1.5'} z-10 w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-200 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-colors shadow-sm`}
-                    title={`Remove ${person.name}`}
+                    title={t('peopleStep.removeAria', { name: person.name })}
                   >
                     <X className="w-3 h-3 stroke-[3]" />
                   </button>
@@ -189,7 +191,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
 
                       {assignedItemCount > 0 && (
                         <span className="text-[9px] text-brand-600 font-semibold mt-0.5">
-                          {assignedItemCount} {assignedItemCount === 1 ? 'item' : 'items'}
+                          {assignedItemCount} {assignedItemCount === 1 ? t('peopleStep.item') : t('peopleStep.items')}
                         </span>
                       )}
                     </div>
@@ -208,11 +210,11 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
       >
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-            Add a Friend
+            {t('peopleStep.addFriendTitle')}
           </span>
           {/* Emoji selector preview */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-400 font-medium">Avatar:</span>
+            <span className="text-xs text-slate-400 font-medium">{t('peopleStep.avatarLabel')}</span>
             <EmojiPicker
               value={selectedEmoji}
               onChange={setSelectedEmoji}
@@ -225,7 +227,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
             type="text"
             value={nameInput}
             onChange={e => setNameInput(e.target.value)}
-            placeholder="Enter friend's name (e.g. Hafeez)"
+            placeholder={t('peopleStep.namePlaceholder')}
             className="w-full text-sm font-semibold bg-[#f2f2f7] dark:bg-black px-5 py-4 rounded-[20px] border border-black/5 dark:border-transparent focus:ring-2 focus:ring-brand-500 outline-none transition-all duration-300"
           />
           <div className="flex gap-2">
@@ -234,7 +236,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
                 type="text"
                 value={upiInput}
                 onChange={e => setUpiInput(e.target.value)}
-                placeholder="UPI ID or Phone No. (optional)"
+                placeholder={t('peopleStep.upiPlaceholder')}
                 className="flex-1 text-sm font-semibold bg-[#f2f2f7] dark:bg-black px-5 py-4 rounded-[20px] border border-black/5 dark:border-transparent focus:ring-2 focus:ring-brand-500 outline-none transition-all duration-300"
               />
             )}
@@ -242,15 +244,15 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
               type="submit"
               disabled={!nameInput.trim()}
               className={`p-4 rounded-[20px] bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white shadow-[0_8px_16px_rgb(37,99,235,0.25)] active:scale-95 transition-all duration-300 flex items-center justify-center min-w-[56px] ${currency !== 'INR' ? 'w-full' : ''}`}
-              title="Add Friend"
+              title={t('peopleStep.addFriendButton')}
             >
               <Plus className="w-5 h-5 stroke-[2.5]" />
-              {currency !== 'INR' && <span className="ml-2 font-bold">Add Friend</span>}
+              {currency !== 'INR' && <span className="ml-2 font-bold">{t('peopleStep.addFriendButton')}</span>}
             </button>
           </div>
           {currency === 'INR' && upiInput.trim() && !upiInput.includes('@') && (
             <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-500 px-2 mt-0.5">
-              Include the '@' symbol (e.g. name@oksbi) so the UPI app accepts it!
+              {t('peopleStep.upiWarning')}
             </p>
           )}
         </div>
@@ -259,7 +261,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
         {unaddedPresets.length > 0 && (
           <div className="pt-2">
             <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 block mb-1.5">
-              Quick Suggestions:
+              {t('peopleStep.quickSuggestions')}
             </span>
             <div className="flex flex-wrap gap-1.5">
               {unaddedPresets.map(preset => (
@@ -289,10 +291,10 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
             </div>
             <div className="text-center">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Remove {personToDelete.name}?
+                {t('peopleStep.removeConfirmTitle', { name: personToDelete.name })}
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {personToDelete.name} has items assigned to them. Removing them will unassign those items.
+                {t('peopleStep.removeConfirmMessage', { name: personToDelete.name })}
               </p>
             </div>
             <div className="flex items-center gap-2 pt-2">
@@ -300,13 +302,13 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
                 onClick={() => setPersonToDelete(null)}
                 className="flex-1 py-2.5 rounded-xl border border-black/5 dark:border-transparent text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50"
               >
-                Cancel
+                {t('peopleStep.cancelButton')}
               </button>
               <button
                 onClick={() => performDelete(personToDelete.id)}
                 className="flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-bold shadow-md shadow-rose-500/20 hover:bg-rose-700"
               >
-                Yes, Remove
+                {t('peopleStep.confirmRemoveButton')}
               </button>
             </div>
           </div>
@@ -319,7 +321,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
           onClick={onBack}
           className="px-5 py-4 rounded-[20px] bg-white dark:bg-[#1c1c1e] text-slate-700 dark:text-slate-200 font-bold text-sm border border-black/5 dark:border-transparent hover:bg-slate-50"
         >
-          Back
+          {t('peopleStep.backButton')}
         </button>
 
         <button
@@ -327,7 +329,7 @@ export const PeopleStep: React.FC<PeopleStepProps> = ({
           onClick={handleContinue}
           className="flex-1 py-4 px-6 rounded-[20px] bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold text-sm shadow-[0_8px_16px_rgb(37,99,235,0.25)] flex items-center justify-center gap-2 active:scale-95 transition-all"
         >
-          <span>Continue to Item Assignment</span>
+          <span>{t('peopleStep.continueButton')}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
