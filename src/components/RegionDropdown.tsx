@@ -75,9 +75,15 @@ export const RegionDropdown: React.FC = () => {
       {isOpen && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 max-h-[300px] overflow-y-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-xl shadow-slate-200/20 dark:shadow-black/40 z-50 p-1">
           {REGIONS.map((region) => (
-            <a
+            <button
               key={region.code}
-              href={`/${region.code}/`}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsOpen(false);
+                // Dispatch custom event for App.tsx to catch and handle SPA routing!
+                window.dispatchEvent(new CustomEvent('regionChange', { detail: region }));
+              }}
               className={`flex items-center justify-between w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors ${
                 activeRegion.code === region.code
                   ? 'bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300 font-semibold'
@@ -91,7 +97,7 @@ export const RegionDropdown: React.FC = () => {
               {activeRegion.code === region.code && (
                 <Check className="w-4 h-4 text-brand-600 dark:text-brand-400" />
               )}
-            </a>
+            </button>
           ))}
         </div>
       )}

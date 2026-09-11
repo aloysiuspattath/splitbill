@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Bill, CalculatedBillResult, Group, CurrencyCode, Person } from './types';
 import { useTranslation } from 'react-i18next';
 import { Header } from './components/Header';
@@ -76,12 +76,45 @@ export function App() {
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).__REGION__?.lang) {
-      const langCode = (window as any).__REGION__.lang.split('-')[0];
+    // 1. Initial Load Logic
+    if (typeof window !== 'undefined') {
+      const pathMatch = window.location.pathname.match(/^\/([a-z]{2})(?:\/|$)/);
+      const urlRegionCode = pathMatch ? pathMatch[1] : null;
+      
+      let lang = (window as any).__REGION__?.lang;
+      // Fallbacks if __REGION__ is missing from cache
+      if (!lang) {
+        const langMap: Record<string, string> = { es: 'es-ES', pt: 'pt-BR', de: 'de-DE', ja: 'ja-JP', id: 'id-ID', fr: 'fr-FR', it: 'it-IT' };
+        if (urlRegionCode && langMap[urlRegionCode]) lang = langMap[urlRegionCode];
+      }
+
+      if (lang) {
+        const langCode = lang.split('-')[0];
+        if (['en', 'es', 'pt', 'de', 'ja', 'id', 'fr', 'it'].includes(langCode)) {
+          i18n.changeLanguage(langCode);
+        }
+      }
+    }
+
+    // 2. SPA Region Switch Listener
+    const handleRegionChange = (e: any) => {
+      const region = e.detail;
+      
+      // Update URL without reload
+      window.history.pushState({}, '', `/${region.code}/`);
+      
+      // Update Language Instantly
+      const langCode = region.lang ? region.lang.split('-')[0] : 'en';
       if (['en', 'es', 'pt', 'de', 'ja', 'id', 'fr', 'it'].includes(langCode)) {
         i18n.changeLanguage(langCode);
       }
-    }
+      
+      // Update Currency Instantly
+      setBill(prev => ({ ...prev, currency: region.currency as CurrencyCode }));
+    };
+
+    window.addEventListener('regionChange', handleRegionChange);
+    return () => window.removeEventListener('regionChange', handleRegionChange);
   }, [i18n]);
 
   // Theme state
