@@ -1,4 +1,4 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -128,3 +128,4 @@ sitemap += `</urlset>`;
 
 fs.writeFileSync(path.join(distPath, 'sitemap.xml'), sitemap);
 console.log('Generated sitemap.xml');
+
