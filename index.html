@@ -1,17 +1,24 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-F6H6HMGKG8"></script>
+    <!-- Google Analytics: loaded after paint to avoid blocking FCP/LCP -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-F6H6HMGKG8');
+      // Defer GA until after first paint
+      window.addEventListener('load', function() {
+        var s = document.createElement('script');
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-F6H6HMGKG8';
+        s.async = true;
+        document.head.appendChild(s);
+        s.onload = function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-F6H6HMGKG8');
+        };
+      });
     </script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="/receipt-icon.svg" />
@@ -57,7 +64,7 @@
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="757" />
     <meta property="og:image:height" content="623" />
-    <meta property="og:image:alt" content="SplitBill â€” Best Way To Split Your Bill Easily" />
+    <meta property="og:image:alt" content="SplitBill - Best Way To Split Your Bill Easily" />
     
     <!-- Twitter / X Cards -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -175,16 +182,30 @@
     </script>
 
     <!-- Non-render-blocking Inter font with system fallback -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    </noscript>
+    <!-- Inter font loaded via @fontsource (bundled, no external request) -->
   </head>
   <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen antialiased selection:bg-brand-500 selection:text-white">
     <div id="root">
+      <!-- Inline skeleton shown during React hydration (improves FCP/LCP) -->
+      <style>
+        .sk{max-width:28rem;margin:0 auto;padding:1.5rem 1.25rem;text-align:center}
+        .sk-bar{background:#e2e8f0;border-radius:9999px;margin:0 auto}
+        .sk-pulse{animation:sk-p 1.5s ease-in-out infinite}
+        @keyframes sk-p{0%,100%{opacity:1}50%{opacity:.4}}
+        @media(prefers-color-scheme:dark){.sk-bar{background:#334155}}
+      </style>
+      <div class="sk sk-pulse" aria-label="Loading SplitBill...">
+        <div class="sk-bar" style="width:60%;height:14px;margin-bottom:24px"></div>
+        <div class="sk-bar" style="width:176px;height:176px;border-radius:32px;margin-bottom:16px"></div>
+        <div class="sk-bar" style="width:75%;height:28px;margin-bottom:8px"></div>
+        <div class="sk-bar" style="width:50%;height:16px;margin-bottom:24px"></div>
+        <div class="sk-bar" style="width:100%;height:52px;border-radius:16px;margin-bottom:12px"></div>
+        <div style="display:flex;gap:10px">
+          <div class="sk-bar" style="flex:1;height:44px;border-radius:16px"></div>
+          <div class="sk-bar" style="flex:1;height:44px;border-radius:16px"></div>
+        </div>
+      </div>
+      <!-- SEO fallback for non-JS crawlers -->
       <div style="display: none;">
         <h1>Free Bill Splitter & Receipt Scanner</h1>
         <p>Split restaurant bills with friends instantly. Scan receipts with local OCR, assign items by portions, calculate exact shares with zero rounding error. No signup required.</p>

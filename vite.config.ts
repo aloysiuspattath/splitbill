@@ -61,7 +61,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        globIgnores: ['**/tesseract/**', '**/version.json'],
+        globIgnores: ['**/tesseract/**', '**/version.json', '**/export-pdf*', '**/export-image*', '**/html2canvas*', '**/inter-vietnamese*', '**/inter-greek*', '**/inter-cyrillic*'],
         navigateFallbackDenylist: [/^\/version\.json/],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
@@ -106,6 +106,8 @@ export default defineConfig({
         manualChunks: {
           'vendor-react': ['react', 'react-dom'],
           'vendor-icons': ['lucide-react'],
+          'export-pdf': ['jspdf', 'jspdf-autotable'],
+          'export-image': ['html-to-image'],
         },
       },
     },
