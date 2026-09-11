@@ -107,8 +107,6 @@ export default defineConfig({
         manualChunks: {
           'vendor-react': ['react', 'react-dom'],
           'vendor-icons': ['lucide-react'],
-          'export-pdf': ['jspdf', 'jspdf-autotable'],
-          'export-image': ['html-to-image'],
         },
       },
     },
