@@ -24,14 +24,23 @@ export const RegionDropdown: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const getActiveRegion = () => {
-    if (typeof window === 'undefined') return REGIONS[1]; // default US
+  const [activeCode, setActiveCode] = useState(() => {
+    if (typeof window === 'undefined') return 'us';
     const match = window.location.pathname.match(/^\/([a-z]{2})(?:\/|$)/);
-    const code = match ? match[1] : 'us';
-    return REGIONS.find(r => r.code === code) || REGIONS.find(r => r.code === 'us')!;
-  };
+    return match ? match[1] : 'us';
+  });
 
-  const activeRegion = getActiveRegion();
+  const activeRegion = REGIONS.find(r => r.code === activeCode) || REGIONS.find(r => r.code === 'us')!;
+
+  useEffect(() => {
+    const handleRegionSync = (e: any) => {
+      if (e.detail && e.detail.code) {
+        setActiveCode(e.detail.code);
+      }
+    };
+    window.addEventListener('regionChange', handleRegionSync);
+    return () => window.removeEventListener('regionChange', handleRegionSync);
+  }, []);
 
   // Close dropdown on click outside or Escape key
   useEffect(() => {
@@ -104,4 +113,5 @@ export const RegionDropdown: React.FC = () => {
     </div>
   );
 };
+
 
