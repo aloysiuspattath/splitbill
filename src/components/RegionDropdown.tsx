@@ -1,23 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { Globe, Check, ChevronDown } from 'lucide-react';
 
 const REGIONS = [
-  { code: 'in', name: 'India', flag: '🇮🇳' },
-  { code: 'us', name: 'United States', flag: '🇺🇸' },
-  { code: 'uk', name: 'United Kingdom', flag: '🇬🇧' },
-  { code: 'au', name: 'Australia', flag: '🇦🇺' },
-  { code: 'ca', name: 'Canada', flag: '🇨🇦' },
-  { code: 'sg', name: 'Singapore', flag: '🇸🇬' },
-  { code: 'eu', name: 'Europe', flag: '🇪🇺' },
-  { code: 'ae', name: 'UAE', flag: '🇦🇪' },
-  { code: 'es', name: 'España', flag: '🇪🇸' },
-  { code: 'mx', name: 'México', flag: '🇲🇽' },
-  { code: 'br', name: 'Brasil', flag: '🇧🇷' },
-  { code: 'de', name: 'Deutschland', flag: '🇩🇪' },
-  { code: 'jp', name: '日本', flag: '🇯🇵' },
-  { code: 'id', name: 'Indonesia', flag: '🇮🇩' },
-  { code: 'fr', name: 'France', flag: '🇫🇷' },
-  { code: 'it', name: 'Italia', flag: '🇮🇹' },
+  { code: 'in', name: 'India', flag: '🇮🇳', lang: 'en-IN', currency: 'INR' },
+  { code: 'us', name: 'United States', flag: '🇺🇸', lang: 'en-US', currency: 'USD' },
+  { code: 'uk', name: 'United Kingdom', flag: '🇬🇧', lang: 'en-GB', currency: 'GBP' },
+  { code: 'au', name: 'Australia', flag: '🇦🇺', lang: 'en-AU', currency: 'AUD' },
+  { code: 'ca', name: 'Canada', flag: '🇨🇦', lang: 'en-CA', currency: 'CAD' },
+  { code: 'sg', name: 'Singapore', flag: '🇸🇬', lang: 'en-SG', currency: 'SGD' },
+  { code: 'eu', name: 'Europe', flag: '🇪🇺', lang: 'en-IE', currency: 'EUR' },
+  { code: 'ae', name: 'UAE', flag: '🇦🇪', lang: 'en-AE', currency: 'AED' },
+  { code: 'es', name: 'España', flag: '🇪🇸', lang: 'es-ES', currency: 'EUR' },
+  { code: 'mx', name: 'México', flag: '🇲🇽', lang: 'es-MX', currency: 'MXN' },
+  { code: 'br', name: 'Brasil', flag: '🇧🇷', lang: 'pt-BR', currency: 'BRL' },
+  { code: 'de', name: 'Deutschland', flag: '🇩🇪', lang: 'de-DE', currency: 'EUR' },
+  { code: 'jp', name: '日本', flag: '🇯🇵', lang: 'ja-JP', currency: 'JPY' },
+  { code: 'id', name: 'Indonesia', flag: '🇮🇩', lang: 'id-ID', currency: 'IDR' },
+  { code: 'fr', name: 'France', flag: '🇫🇷', lang: 'fr-FR', currency: 'EUR' },
+  { code: 'it', name: 'Italia', flag: '🇮🇹', lang: 'it-IT', currency: 'EUR' },
 ];
 
 export const RegionDropdown: React.FC = () => {
@@ -104,3 +104,4 @@ export const RegionDropdown: React.FC = () => {
     </div>
   );
 };
+
