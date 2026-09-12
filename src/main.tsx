@@ -1,4 +1,9 @@
-﻿import React from 'react';
+/**
+ * SplitBill - Free & Private Bill Splitter
+ * Copyright (c) 2026 Aloysius Pattath
+ * Licensed under the GPLv3 License
+ */
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/index.css';
@@ -65,5 +70,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <App />
   </React.StrictMode>
 );
+
 
 

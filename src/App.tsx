@@ -1,4 +1,9 @@
-﻿import { useState, useEffect, lazy, Suspense } from 'react';
+/**
+ * SplitBill - Free & Private Bill Splitter
+ * Copyright (c) 2026 Aloysius Pattath
+ * Licensed under the GPLv3 License
+ */
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Bill, CalculatedBillResult, Group, CurrencyCode, Person } from './types';
 import { useTranslation } from 'react-i18next';
 import { Header } from './components/Header';
@@ -637,6 +642,7 @@ export function App() {
   );
 }
 export default App;
+
 
 
 

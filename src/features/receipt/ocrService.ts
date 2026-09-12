@@ -1,3 +1,8 @@
+/**
+ * SplitBill - Free & Private Bill Splitter
+ * Copyright (c) 2026 Aloysius Pattath
+ * Licensed under the GPLv3 License
+ */
 import { CurrencyCode } from '../../types';
 import { ParsedReceiptData, parseReceiptText } from './ReceiptParser';
 
@@ -220,3 +225,4 @@ export async function recognizeReceipt(
     throw new Error('OCR recognition failed. You can still enter or edit items manually.');
   }
 }
+

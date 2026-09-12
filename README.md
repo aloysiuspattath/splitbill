@@ -50,5 +50,10 @@ This project is legally protected under the **GNU General Public License v3.0 (G
 
 If you fork, modify, or distribute this software, you **must** release your modified version as open-source under the same GPLv3 license. This ensures the tool remains forever free and protects user privacy from closed-source corporate exploitation. See the `LICENSE` file for more details.
 
+### ⚖️ Attribution & Forking
+If you fork and host a public version of this application, you must provide clear attribution to the original creator:
+1. Retain the Copyright notice and creator attribution in the footer of the application.
+2. Provide a link back to this original GitHub repository.
+
 ---
 *Crafted with ❤️ by Aloysius Pattath*

@@ -1,3 +1,8 @@
+/**
+ * SplitBill - Free & Private Bill Splitter
+ * Copyright (c) 2026 Aloysius Pattath
+ * Licensed under the GPLv3 License
+ */
 import { Bill } from '../../types';
 import { calculateBill } from './engine';
 
@@ -137,4 +142,5 @@ export function calculateCategoryTotals(bills: Bill[]): Partial<Record<string, n
 
   return totals;
 }
+
 
