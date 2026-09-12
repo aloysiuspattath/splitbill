@@ -37,9 +37,11 @@ export const Header: React.FC<HeaderProps> = ({
           title={t('header.goToHome')}
           aria-label={t('header.brand') + " " + t('header.goToHome')}
         >
-          <div className="w-9 h-9 rounded-[14px] bg-brand-600 text-white flex items-center justify-center shadow-md shadow-brand-500/25 group-hover:scale-105 transition-transform flex-shrink-0">
-            <Receipt className="w-4 h-4 stroke-[2.5]" />
-          </div>
+          <img 
+            src="/pwa-192x192.png" 
+            alt="SplitBill Logo" 
+            className="w-9 h-9 group-hover:scale-105 transition-transform flex-shrink-0 drop-shadow-sm"
+          />
           <span className="font-black text-xl text-slate-900 dark:text-white tracking-tight hidden min-[320px]:block">
             {t('header.brand')}
           </span>
