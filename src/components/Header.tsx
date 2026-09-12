@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
           aria-label={t('header.brand') + " " + t('header.goToHome')}
         >
           <img 
-            src="/pwa-192x192.png" 
+            src="/pwa-192x192.png?v=2" 
             alt="SplitBill Logo" 
             className="w-9 h-9 group-hover:scale-105 transition-transform flex-shrink-0 drop-shadow-sm"
           />
