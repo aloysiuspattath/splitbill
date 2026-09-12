@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, Moon, Sun, History, Receipt } from 'lucide-react';
+import { ShieldCheck, Moon, Sun, History } from 'lucide-react';
 import { CurrencyCode } from '../types';
 import { CurrencyDropdown } from './CurrencyDropdown';
 
