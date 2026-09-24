@@ -191,6 +191,25 @@ export async function recognizeReceipt(
       yoloBox = yoloResult.box;
       yoloRotation = yoloResult.rotation;
     }
+
+    // 🚀 CRITICAL FIX: Scale the YOLO box down to match the maxDim=1400 canvas Tesseract will use!
+    if (yoloBox) {
+      const isLandscape = yoloRotation === 90 || yoloRotation === 270 || (yoloRotation === undefined && originalImg.width > originalImg.height);
+      const baseWidth = isLandscape ? originalImg.height : originalImg.width;
+      const baseHeight = isLandscape ? originalImg.width : originalImg.height;
+      
+      const maxDim = 1400;
+      let scaleFactor = 1;
+      if (baseWidth > maxDim || baseHeight > maxDim) {
+        scaleFactor = baseWidth > baseHeight ? maxDim / baseWidth : maxDim / baseHeight;
+      }
+      yoloBox = [
+        yoloBox[0] * scaleFactor,
+        yoloBox[1] * scaleFactor,
+        yoloBox[2] * scaleFactor,
+        yoloBox[3] * scaleFactor
+      ];
+    }
   } catch (e) {
     console.warn('YOLO AI failed, falling back to pure Tesseract OCR.', e);
   }
@@ -340,7 +359,7 @@ export async function recognizeReceipt(
               parsed.restaurantName = aiData.restaurantName;
             }
             if (aiData.grandTotal) {
-              parsed.totalPaise = Math.round(aiData.grandTotal * 100);
+              parsed.detectedTotalPaise = Math.round(aiData.grandTotal * 100);
             }
           }
         }
