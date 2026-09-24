@@ -8,6 +8,16 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/index.css';
 import './i18n';
+
+// NUCLEAR CACHE BUSTER: Forcefully unregister all old Service Workers to clear the PWA cache
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (const reg of registrations) {
+      reg.unregister().then(() => console.log('Unregistered ghost SW:', reg.scope));
+    }
+  });
+}
+
 import { registerSW } from 'virtual:pwa-register';
 import { cleanupReloadParam } from './utils/cacheManager';
 import { checkForAppUpdate } from './utils/versionCheck';
