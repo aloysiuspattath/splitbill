@@ -4,6 +4,7 @@ let session: ort.InferenceSession | null = null;
 
 export async function initYolo() {
   if (!session) {
+    ort.env.wasm.numThreads = 1;
     ort.env.wasm.wasmPaths = '/';
     session = await ort.InferenceSession.create('/yolo-total.onnx', { executionProviders: ['wasm'] });
   }
