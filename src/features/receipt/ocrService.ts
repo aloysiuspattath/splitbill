@@ -323,49 +323,52 @@ export async function recognizeReceipt(
       }
       cleanTextLines.push(lineStr);
     }
-    const smartRawText = cleanTextLines.join('\n');
+        const smartRawText = cleanTextLines.join('\n');
 
-    onProgress?.({ status: 'Structuring items...', progress: 98 });
+    onProgress?.({ status: 'Structuring items via AI...', progress: 95 });
     await worker.terminate();
 
-    // 4. Mathematical Overlay inside the parser!
-    let parsed = parseReceiptText(smartRawText, currency, lines, yoloBox);
-    
-    // 5. 🚀 AI CLOUD FALLBACK
-    // If the receipt is mathematically chaotic (0 items found), send it to the Gemini Flash proxy
-    if (parsed.items.length === 0) {
-      onProgress?.({ status: 'Mathematical layout failed, trying AI fallback...', progress: 99 });
-      try {
-        const res = await fetch('/api/parseReceipt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: smartRawText })
-        });
-        
-        if (res.ok) {
-          const aiData = await res.json();
-          if (aiData.items && aiData.items.length > 0) {
-            parsed.items = aiData.items.map((item: any, i: number) => ({
-              id: `ai-item-${i}`,
+    let parsed: any = null;
+
+    // ?? 1. AI CLOUD FIRST (Groq Llama 3.1 / Gemini Flash)
+    // Always attempt intelligent parsing first for maximum accuracy on crushed/sideways receipts
+    try {
+      const res = await fetch('/api/parseReceipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: smartRawText })
+      });
+      
+      if (res.ok) {
+        const aiData = await res.json();
+        if (aiData.items && aiData.items.length > 0) {
+          parsed = {
+            restaurantName: aiData.restaurantName || undefined,
+            items: aiData.items.map((item: any, i: number) => ({
+              id: 'ai-item-' + i,
               name: item.name || 'Unknown Item',
               quantity: item.quantity || 1,
               unitPricePaise: Math.round(((item.totalPrice || 0) / (item.quantity || 1)) * 100),
               totalPricePaise: Math.round((item.totalPrice || 0) * 100),
               assignedPersonIds: [],
               assignments: [],
-            }));
-            
-            if (aiData.restaurantName) {
-              parsed.restaurantName = aiData.restaurantName;
-            }
-            if (aiData.grandTotal) {
-              parsed.detectedTotalPaise = Math.round(aiData.grandTotal * 100);
-            }
-          }
+            })),
+            detectedTaxes: [],
+            detectedTotalPaise: aiData.grandTotal ? Math.round(aiData.grandTotal * 100) : undefined,
+            rawText: smartRawText,
+          };
+          onProgress?.({ status: 'AI extraction successful!', progress: 99 });
         }
-      } catch (aiErr) {
-        console.warn('AI fallback failed:', aiErr);
       }
+    } catch (aiErr) {
+      console.warn('AI Cloud parsing failed, falling back to local mathematical layout parser:', aiErr);
+    }
+
+    // 2. LOCAL MATHEMATICAL FALLBACK
+    // If AI failed (e.g. no API key, network error, or returned 0 items), fallback to the Tesseract Regex/YOLO math parser
+    if (!parsed || parsed.items.length === 0) {
+      onProgress?.({ status: 'Falling back to local layout engine...', progress: 98 });
+      parsed = parseReceiptText(smartRawText, currency, lines, yoloBox);
     }
 
     onProgress?.({ status: 'Done!', progress: 100 });
@@ -379,4 +382,7 @@ export async function recognizeReceipt(
     throw new Error('OCR recognition failed. You can still enter or edit items manually.');
   }
 }
+
+
+
 
