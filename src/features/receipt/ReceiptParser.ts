@@ -532,7 +532,7 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
       unitPrice = candidates[0].unitPrice;
       lineTotal = candidates[0].lineTotal;
     } else {
-      if (nums[0] >= 1 && nums[0] <= 50 && Number.isInteger(nums[0])) {
+      if (nums[0] >= 1 && nums[0] < 10 && Number.isInteger(nums[0])) {
         quantity = nums[0];
         unitPrice = nums[1];
         lineTotal = Math.round(quantity * unitPrice * 100) / 100;
@@ -555,7 +555,12 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
         unitPrice = nums[0];
         lineTotal = nums[1];
       }
-    } else if (nums[0] >= 1 && nums[0] <= 50 && Number.isInteger(nums[0]) && !leadingQty) {
+    } else if (
+      nums[0] >= 1 && 
+      nums[0] < 10 && // Must be a realistic quantity (less than 10) to avoid confusing with price like 30.00 or 40.00
+      Number.isInteger(nums[0]) && 
+      !leadingQty
+    ) {
       quantity = nums[0];
       unitPrice = nums[1];
       lineTotal = Math.round(quantity * unitPrice * 100) / 100;
