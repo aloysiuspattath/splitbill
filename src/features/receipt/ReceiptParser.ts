@@ -573,6 +573,18 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
     unitPrice = nums[0];
   }
 
+  // 🚀 OCR Decimal Reconciliation: Fix Tesseract missing decimals (e.g., reading 90.00 as 9000)
+  // If the implied quantity is absurdly high (> 20), check if shifting the decimal restores a valid quantity.
+  if (unitPrice > 0 && lineTotal / unitPrice > 20) {
+    if ((lineTotal / 10) % unitPrice === 0 && (lineTotal / 10) / unitPrice < 20) {
+      lineTotal /= 10;
+      quantity = lineTotal / unitPrice;
+    } else if ((lineTotal / 100) % unitPrice === 0 && (lineTotal / 100) / unitPrice < 20) {
+      lineTotal /= 100;
+      quantity = lineTotal / unitPrice;
+    }
+  }
+
   const unitPricePaise = toPaise(unitPrice, currency);
   const totalPricePaise = toPaise(lineTotal, currency);
 
