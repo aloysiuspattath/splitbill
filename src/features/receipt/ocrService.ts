@@ -5,6 +5,7 @@
  */
 import { CurrencyCode } from '../../types';
 import { ParsedReceiptData, parseReceiptText } from './ReceiptParser';
+import { detectTotalBox } from './yoloService';
 
 export interface OcrProgress {
   status: string;
@@ -219,13 +220,28 @@ export async function recognizeReceipt(
   }
 
   try {
+    // 1. Run YOLO to find the "Total" box coordinates
+    let yoloBox: [number, number, number, number] | undefined;
+    try {
+      const originalImg = new Image();
+      originalImg.src = typeof imageSource === 'string' ? imageSource : URL.createObjectURL(imageSource);
+      await new Promise(res => originalImg.onload = res);
+      const box = await detectTotalBox(originalImg);
+      if (box) yoloBox = box;
+    } catch (e) {
+      console.warn('YOLO AI failed, falling back to pure Tesseract OCR.', e);
+    }
+
+    // 2. Run Tesseract to get all the text
     const ret = await worker.recognize(processedImage);
     const rawText = ret.data.text;
+    const lines = ret.data.lines;
 
     onProgress?.({ status: 'Structuring items...', progress: 98 });
     await worker.terminate();
 
-    const parsed = parseReceiptText(rawText, currency);
+    // 3. Mathematical Overlay inside the parser!
+    const parsed = parseReceiptText(rawText, currency, lines, yoloBox);
     onProgress?.({ status: 'Done!', progress: 100 });
 
     return parsed;

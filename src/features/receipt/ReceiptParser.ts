@@ -138,7 +138,7 @@ function findItemsTableStartIndex(lines: string[], restaurantLineIndex: number):
  * Employs arithmetic self-correction (Qty * UnitPrice == LineTotal)
  * and intelligent multi-line item name reconstruction without right-margin noise.
  */
-export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): ParsedReceiptData {
+export function parseReceiptText(text: string, currency: CurrencyCode = 'INR', ocrLines?: any[], yoloBox?: [number, number, number, number]): ParsedReceiptData {
   const lines = text
     .split(/\r?\n/)
     .map(l => l.trim())
@@ -295,6 +295,30 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR'): 
 
   if (!detectedTotalPaise && detectedSubtotalPaise) {
     detectedTotalPaise = detectedSubtotalPaise;
+  }
+
+  // 🚀 YOLO MATHEMATICAL OVERLAY
+  if (ocrLines && yoloBox) {
+    const [yx1, yy1, yx2, yy2] = yoloBox;
+    for (const line of ocrLines) {
+      if (!line.bbox) continue;
+      const { x0, y0, x1, y1 } = line.bbox;
+      const overlapX = Math.max(0, Math.min(x1, yx2) - Math.max(x0, yx1));
+      const overlapY = Math.max(0, Math.min(y1, yy2) - Math.max(y0, yy1));
+      
+      // If the Tesseract text overlaps physically with the YOLO bounding box
+      if (overlapX > 0 && overlapY > 0) {
+        const numbers = extractNumbersFromLine(line.text);
+        if (numbers.length > 0) {
+          const parsedAmt = toPaise(numbers[numbers.length - 1], currency);
+          if (parsedAmt > 0) {
+            // Overwrite Regex total with YOLO confirmed total!
+            detectedTotalPaise = parsedAmt;
+            break;
+          }
+        }
+      }
+    }
   }
 
   return {
