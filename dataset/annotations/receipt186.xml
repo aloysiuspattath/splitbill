@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>receipt186.jpg</filename>
+	<path>C:\Users\HP\Documents\Capstone\dataset\images\receipt186.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>562</width>
+		<height>1000</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>total</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>40</xmin>
+			<ymin>633</ymin>
+			<xmax>552</xmax>
+			<ymax>686</ymax>
+		</bndbox>
+	</object>
+</annotation>

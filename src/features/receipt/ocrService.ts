@@ -5,7 +5,7 @@
  */
 import { CurrencyCode } from '../../types';
 import { ParsedReceiptData, parseReceiptText } from './ReceiptParser';
-import { detectTotalBox } from './yoloService';
+import { autoRotateAndDetect } from './yoloService';
 
 export interface OcrProgress {
   status: string;
@@ -17,7 +17,7 @@ export interface OcrProgress {
  * normalization and shadow compensation. This removes camera shadows (e.g. hands/phone)
  * and produces high-contrast, uniformly lit text for maximum OCR accuracy.
  */
-export async function preprocessImage(imageFile: File | Blob): Promise<string> {
+export async function preprocessImage(imageFile: File | Blob, aiRotation?: number): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(imageFile);
@@ -31,7 +31,11 @@ export async function preprocessImage(imageFile: File | Blob): Promise<string> {
         return;
       }
 
-      const isLandscape = img.width > img.height;
+      // If AI detected a rotation, use it. Otherwise fallback to width/height heuristic
+      const isRotated90 = aiRotation === 90 || aiRotation === 270;
+      const needsFallbackRotation = aiRotation === undefined && img.width > img.height;
+      const isLandscape = isRotated90 || needsFallbackRotation;
+      
       let targetWidth = isLandscape ? img.height : img.width;
       let targetHeight = isLandscape ? img.width : img.height;
 
@@ -50,11 +54,21 @@ export async function preprocessImage(imageFile: File | Blob): Promise<string> {
       canvas.width = targetWidth;
       canvas.height = targetHeight;
 
-      if (isLandscape) {
+      if (aiRotation !== undefined && aiRotation !== 0) {
+        ctx.translate(targetWidth / 2, targetHeight / 2);
+        ctx.rotate((aiRotation * Math.PI) / 180);
+        
+        // If 90 or 270, w/h are swapped
+        if (aiRotation === 90 || aiRotation === 270) {
+           ctx.drawImage(img, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
+        } else {
+           ctx.drawImage(img, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+        }
+        ctx.setTransform(1, 0, 0, 1, 0, 0); 
+      } else if (needsFallbackRotation) {
         ctx.translate(targetWidth / 2, targetHeight / 2);
         ctx.rotate(Math.PI / 2); // Rotate 90 degrees clockwise
         ctx.drawImage(img, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
-        // Reset transform to keep it clean for subsequent pixel manipulation
         ctx.setTransform(1, 0, 0, 1, 0, 0); 
       } else {
         ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
@@ -162,14 +176,33 @@ export async function recognizeReceipt(
   // Lazy-load Tesseract.js dynamically
   const Tesseract = await import('tesseract.js');
 
-  onProgress?.({ status: 'Preprocessing receipt image...', progress: 25 });
+  onProgress?.({ status: 'Scanning receipt geometry...', progress: 20 });
+  let yoloBox: [number, number, number, number] | undefined;
+  let yoloRotation: number | undefined;
+
+  try {
+    const originalImg = new Image();
+    originalImg.src = typeof imageSource === 'string' ? imageSource : URL.createObjectURL(imageSource);
+    await new Promise(res => originalImg.onload = res);
+    
+    // Test all 4 rotations to find the Total box
+    const yoloResult = await autoRotateAndDetect(originalImg);
+    if (yoloResult) {
+      yoloBox = yoloResult.box;
+      yoloRotation = yoloResult.rotation;
+    }
+  } catch (e) {
+    console.warn('YOLO AI failed, falling back to pure Tesseract OCR.', e);
+  }
+
+  onProgress?.({ status: 'Preprocessing receipt image...', progress: 30 });
 
   let processedImage: string;
   if (typeof imageSource === 'string') {
     processedImage = imageSource;
   } else {
     try {
-      processedImage = await preprocessImage(imageSource);
+      processedImage = await preprocessImage(imageSource, yoloRotation);
     } catch {
       processedImage = URL.createObjectURL(imageSource);
     }
@@ -220,18 +253,6 @@ export async function recognizeReceipt(
   }
 
   try {
-    // 1. Run YOLO to find the "Total" box coordinates
-    let yoloBox: [number, number, number, number] | undefined;
-    try {
-      const originalImg = new Image();
-      originalImg.src = typeof imageSource === 'string' ? imageSource : URL.createObjectURL(imageSource);
-      await new Promise(res => originalImg.onload = res);
-      const box = await detectTotalBox(originalImg);
-      if (box) yoloBox = box;
-    } catch (e) {
-      console.warn('YOLO AI failed, falling back to pure Tesseract OCR.', e);
-    }
-
     // 2. Run Tesseract to get all the text
     const ret = await worker.recognize(processedImage);
     const rawText = ret.data.text;

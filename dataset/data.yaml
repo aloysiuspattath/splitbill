@@ -1,0 +1,6 @@
+path: D:/new projects/splitpay/dataset
+train: images
+val: images
+
+names:
+  0: total
