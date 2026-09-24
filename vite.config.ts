@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 import fs from 'fs';
 
@@ -14,6 +15,18 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'node_modules/onnxruntime-web/dist/*.wasm',
+          dest: ''
+        },
+        {
+          src: 'node_modules/onnxruntime-web/dist/*.mjs',
+          dest: ''
+        }
+      ]
+    }),
     {
       name: 'version-generator',
       buildStart() {
