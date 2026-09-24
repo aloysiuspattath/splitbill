@@ -260,14 +260,57 @@ export async function recognizeReceipt(
 
     // 3. Run Tesseract to get all the text
     const ret = await worker.recognize(processedImage);
-    const rawText = ret.data.text;
     const lines = ret.data.lines;
+
+    // 🚀 SPATIAL SMART MARGIN CROPPING
+    // Filters out hallucinated background text (like dark wood tables) while preserving alignment!
+    const allX0: number[] = [];
+    const allX1: number[] = [];
+    for (const line of lines) {
+      if (!line.words) continue;
+      for (const word of line.words) {
+        allX0.push(word.bbox.x0);
+        allX1.push(word.bbox.x1);
+      }
+    }
+    
+    allX0.sort((a, b) => a - b);
+    allX1.sort((a, b) => a - b);
+    
+    const leftMargin = allX0[Math.floor(allX0.length * 0.15)] || 0;
+    const rightMargin = allX1[Math.floor(allX1.length * 0.85)] || 9999;
+    const receiptWidth = rightMargin - leftMargin;
+    const padding = Math.max(50, receiptWidth * 0.2); 
+    const minX = leftMargin - padding;
+    const maxX = rightMargin + padding;
+
+    const cleanTextLines: string[] = [];
+    for (const line of lines) {
+      if (!line.words) continue;
+      const validWords = line.words.filter((w: any) => w.bbox.x0 >= minX && w.bbox.x1 <= maxX);
+      if (validWords.length === 0) continue;
+      
+      let lineStr = "";
+      let lastX1 = -1;
+      for (const w of validWords) {
+        if (lastX1 !== -1) {
+          const gap = w.bbox.x0 - lastX1;
+          // Avg char width in Tesseract is ~10-15px. We dynamically insert spaces to preserve alignment.
+          const spaces = gap > 15 ? ' '.repeat(Math.floor(gap / 15)) : ' ';
+          lineStr += spaces;
+        }
+        lineStr += w.text;
+        lastX1 = w.bbox.x1;
+      }
+      cleanTextLines.push(lineStr);
+    }
+    const smartRawText = cleanTextLines.join('\n');
 
     onProgress?.({ status: 'Structuring items...', progress: 98 });
     await worker.terminate();
 
     // 4. Mathematical Overlay inside the parser!
-    const parsed = parseReceiptText(rawText, currency, lines, yoloBox);
+    const parsed = parseReceiptText(smartRawText, currency, lines, yoloBox);
     onProgress?.({ status: 'Done!', progress: 100 });
 
     return parsed;
