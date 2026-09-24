@@ -139,6 +139,31 @@ function findItemsTableStartIndex(lines: string[], restaurantLineIndex: number):
  * and intelligent multi-line item name reconstruction without right-margin noise.
  */
 export function parseReceiptText(text: string, currency: CurrencyCode = 'INR', ocrLines?: any[], yoloBox?: [number, number, number, number]): ParsedReceiptData {
+  let yoloDetectedTotalPaise: number | undefined;
+
+  // 🚀 YOLO MATHEMATICAL OVERLAY (Run FIRST to get a ground-truth ceiling for item prices)
+  if (ocrLines && yoloBox) {
+    const [yx1, yy1, yx2, yy2] = yoloBox;
+    for (const line of ocrLines) {
+      if (!line.bbox) continue;
+      const { x0, y0, x1, y1 } = line.bbox;
+      const overlapX = Math.max(0, Math.min(x1, yx2) - Math.max(x0, yx1));
+      const overlapY = Math.max(0, Math.min(y1, yy2) - Math.max(y0, yy1));
+      
+      // If the Tesseract text overlaps physically with the YOLO bounding box
+      if (overlapX > 0 && overlapY > 0) {
+        const numbers = extractNumbersFromLine(line.text);
+        if (numbers.length > 0) {
+          const parsedAmt = toPaise(numbers[numbers.length - 1], currency);
+          if (parsedAmt > 0) {
+            yoloDetectedTotalPaise = parsedAmt;
+            break;
+          }
+        }
+      }
+    }
+  }
+
   const lines = text
     .split(/\r?\n/)
     .map(l => l.trim())
@@ -150,7 +175,7 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR', o
   const tableStartIdx = findItemsTableStartIndex(lines, restaurantLineIndex);
   let detectedSubtotalPaise: number | undefined;
   let detectedDiscountPaise: number | undefined;
-  let detectedTotalPaise: number | undefined;
+  let detectedTotalPaise: number | undefined = yoloDetectedTotalPaise;
   let itemsSectionEnded = false;
 
   for (let i = 0; i < lines.length; i++) {
@@ -251,7 +276,7 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR', o
     }
 
     // Try parsing item line with arithmetic reconciliation
-    const parsed = tryParseSmartItem(line, currency, items.length + 1);
+    const parsed = tryParseSmartItem(line, currency, items.length + 1, yoloDetectedTotalPaise);
     if (parsed) {
       // Check for multi-line continuation (e.g. food name wrapped to next line without numbers)
       let nextIdx = i + 1;
@@ -297,29 +322,7 @@ export function parseReceiptText(text: string, currency: CurrencyCode = 'INR', o
     detectedTotalPaise = detectedSubtotalPaise;
   }
 
-  // 🚀 YOLO MATHEMATICAL OVERLAY
-  if (ocrLines && yoloBox) {
-    const [yx1, yy1, yx2, yy2] = yoloBox;
-    for (const line of ocrLines) {
-      if (!line.bbox) continue;
-      const { x0, y0, x1, y1 } = line.bbox;
-      const overlapX = Math.max(0, Math.min(x1, yx2) - Math.max(x0, yx1));
-      const overlapY = Math.max(0, Math.min(y1, yy2) - Math.max(y0, yy1));
-      
-      // If the Tesseract text overlaps physically with the YOLO bounding box
-      if (overlapX > 0 && overlapY > 0) {
-        const numbers = extractNumbersFromLine(line.text);
-        if (numbers.length > 0) {
-          const parsedAmt = toPaise(numbers[numbers.length - 1], currency);
-          if (parsedAmt > 0) {
-            // Overwrite Regex total with YOLO confirmed total!
-            detectedTotalPaise = parsedAmt;
-            break;
-          }
-        }
-      }
-    }
-  }
+
 
   return {
     restaurantName: restaurantName || undefined,
@@ -386,7 +389,7 @@ function extractNumbersFromLine(str: string): number[] {
   return nums;
 }
 
-function tryParseSmartItem(line: string, currency: CurrencyCode, index: number): BillItem | null {
+function tryParseSmartItem(line: string, currency: CurrencyCode, index: number, maxPaise?: number): BillItem | null {
   let cleanedLine = line.trim();
 
   // 1. Separate OCR merged fraction: e.g. "11/2 GL" -> "1 1/2 GL"
@@ -573,8 +576,7 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
     unitPrice = nums[0];
   }
 
-  // 🚀 OCR Decimal Reconciliation: Fix Tesseract missing decimals (e.g., reading 90.00 as 9000)
-  // If the implied quantity is absurdly high (> 20), check if shifting the decimal restores a valid quantity.
+  // 🚀 OCR Decimal Reconciliation: Fix Tesseract missing decimals
   if (unitPrice > 0 && lineTotal / unitPrice > 20) {
     if ((lineTotal / 10) % unitPrice === 0 && (lineTotal / 10) / unitPrice < 20) {
       lineTotal /= 10;
@@ -585,8 +587,25 @@ function tryParseSmartItem(line: string, currency: CurrencyCode, index: number):
     }
   }
 
-  const unitPricePaise = toPaise(unitPrice, currency);
-  const totalPricePaise = toPaise(lineTotal, currency);
+  let unitPricePaise = toPaise(unitPrice, currency);
+  let totalPricePaise = toPaise(lineTotal, currency);
+
+  // 🚀 ABSOLUTE CEILING RECONCILIATION
+  // A single item cannot cost more than the Grand Total of the receipt!
+  // If it does, Tesseract 100% missed a decimal point (e.g. read 90.00 as 9000).
+  if (maxPaise && totalPricePaise > maxPaise) {
+    if (totalPricePaise / 100 <= maxPaise) {
+      totalPricePaise = Math.round(totalPricePaise / 100);
+      unitPricePaise = Math.round(unitPricePaise / 100);
+      unitPrice = unitPrice / 100;
+      lineTotal = lineTotal / 100;
+    } else if (totalPricePaise / 10 <= maxPaise) {
+      totalPricePaise = Math.round(totalPricePaise / 10);
+      unitPricePaise = Math.round(unitPricePaise / 10);
+      unitPrice = unitPrice / 10;
+      lineTotal = lineTotal / 10;
+    }
+  }
 
   return {
     id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 6)}-${index}`,
