@@ -310,7 +310,45 @@ export async function recognizeReceipt(
     await worker.terminate();
 
     // 4. Mathematical Overlay inside the parser!
-    const parsed = parseReceiptText(smartRawText, currency, lines, yoloBox);
+    let parsed = parseReceiptText(smartRawText, currency, lines, yoloBox);
+    
+    // 5. 🚀 AI CLOUD FALLBACK
+    // If the receipt is mathematically chaotic (0 items found), send it to the Gemini Flash proxy
+    if (parsed.items.length === 0) {
+      onProgress?.({ status: 'Mathematical layout failed, trying AI fallback...', progress: 99 });
+      try {
+        const res = await fetch('/api/parseReceipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: smartRawText })
+        });
+        
+        if (res.ok) {
+          const aiData = await res.json();
+          if (aiData.items && aiData.items.length > 0) {
+            parsed.items = aiData.items.map((item: any, i: number) => ({
+              id: `ai-item-${i}`,
+              name: item.name || 'Unknown Item',
+              quantity: item.quantity || 1,
+              unitPricePaise: Math.round(((item.totalPrice || 0) / (item.quantity || 1)) * 100),
+              totalPricePaise: Math.round((item.totalPrice || 0) * 100),
+              assignedPersonIds: [],
+              assignments: [],
+            }));
+            
+            if (aiData.restaurantName) {
+              parsed.restaurantName = aiData.restaurantName;
+            }
+            if (aiData.grandTotal) {
+              parsed.totalPaise = Math.round(aiData.grandTotal * 100);
+            }
+          }
+        }
+      } catch (aiErr) {
+        console.warn('AI fallback failed:', aiErr);
+      }
+    }
+
     onProgress?.({ status: 'Done!', progress: 100 });
 
     return parsed;
