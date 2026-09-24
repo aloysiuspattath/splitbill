@@ -1,4 +1,4 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -17,11 +17,11 @@ const regions = [
   { code: 'sg', country: 'Singapore', currency: 'SGD', lang: 'en-SG' },
   
   // New International Markets
-  { code: 'es', country: 'España', currency: 'EUR', lang: 'es-ES' },
-  { code: 'mx', country: 'México', currency: 'MXN', lang: 'es-MX' },
+  { code: 'es', country: 'Espa�a', currency: 'EUR', lang: 'es-ES' },
+  { code: 'mx', country: 'M�xico', currency: 'MXN', lang: 'es-MX' },
   { code: 'br', country: 'Brasil', currency: 'BRL', lang: 'pt-BR' },
   { code: 'de', country: 'Deutschland', currency: 'EUR', lang: 'de-DE' },
-  { code: 'jp', country: '日本', currency: 'JPY', lang: 'ja-JP' },
+  { code: 'jp', country: '??', currency: 'JPY', lang: 'ja-JP' },
   { code: 'id', country: 'Indonesia', currency: 'IDR', lang: 'id-ID' },
   { code: 'fr', country: 'France', currency: 'EUR', lang: 'fr-FR' },
   { code: 'it', country: 'Italia', currency: 'EUR', lang: 'it-IT' },
@@ -128,4 +128,19 @@ sitemap += `</urlset>`;
 
 fs.writeFileSync(path.join(distPath, 'sitemap.xml'), sitemap);
 console.log('Generated sitemap.xml');
+
+
+const srcDir = path.join(__dirname, '../node_modules/onnxruntime-web/dist');
+const destDir = path.join(__dirname, '../dist');
+const files = fs.readdirSync(srcDir);
+for (const file of files) {
+  if (file.endsWith('.wasm') || file.endsWith('.mjs')) {
+    fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
+    console.log('Copied', file);
+  }
+}
+
+
+
+
 

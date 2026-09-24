@@ -1,12 +1,12 @@
 {
   "name": "splitbill",
   "private": true,
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "postbuild": "node scripts/generate-regions.js",
+    "postbuild": "node scripts/generate-regions.js ",
     "preview": "vite preview",
     "test": "vitest run"
   },
