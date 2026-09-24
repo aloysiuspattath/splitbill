@@ -255,14 +255,49 @@ export async function recognizeReceipt(
   try {
     // 2. Run Tesseract to get all the text
     const ret = await worker.recognize(processedImage);
-    const rawText = ret.data.text;
     const lines = ret.data.lines;
+
+    // 🚀 SMART MARGIN CROPPING
+    // Filters out hallucinated background text (like dark wood tables)
+    const allX0: number[] = [];
+    const allX1: number[] = [];
+    for (const line of lines) {
+      if (!line.words) continue;
+      for (const word of line.words) {
+        allX0.push(word.bbox.x0);
+        allX1.push(word.bbox.x1);
+      }
+    }
+    
+    allX0.sort((a, b) => a - b);
+    allX1.sort((a, b) => a - b);
+    
+    // Find the core text block (ignoring the outliers on the edges)
+    const leftMargin = allX0[Math.floor(allX0.length * 0.15)] || 0;
+    const rightMargin = allX1[Math.floor(allX1.length * 0.85)] || 9999;
+    
+    // Allow 20% padding around the core text block
+    const receiptWidth = rightMargin - leftMargin;
+    const padding = Math.max(50, receiptWidth * 0.2); 
+    const minX = leftMargin - padding;
+    const maxX = rightMargin + padding;
+
+    const cleanTextLines: string[] = [];
+    for (const line of lines) {
+      if (!line.words) continue;
+      // Only keep words that physically reside on the receipt paper!
+      const validWords = line.words.filter((w: any) => w.bbox.x0 >= minX && w.bbox.x1 <= maxX);
+      if (validWords.length > 0) {
+        cleanTextLines.push(validWords.map((w: any) => w.text).join(' '));
+      }
+    }
+    const smartRawText = cleanTextLines.join('\n');
 
     onProgress?.({ status: 'Structuring items...', progress: 98 });
     await worker.terminate();
 
     // 3. Mathematical Overlay inside the parser!
-    const parsed = parseReceiptText(rawText, currency, lines, yoloBox);
+    const parsed = parseReceiptText(smartRawText, currency, lines, yoloBox);
     onProgress?.({ status: 'Done!', progress: 100 });
 
     return parsed;
