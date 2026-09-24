@@ -30,25 +30,37 @@ export async function preprocessImage(imageFile: File | Blob): Promise<string> {
         return;
       }
 
+      const isLandscape = img.width > img.height;
+      let targetWidth = isLandscape ? img.height : img.width;
+      let targetHeight = isLandscape ? img.width : img.height;
+
       // Keep optimal resolution for receipt fonts while keeping memory low on mobile
       const maxDim = 1400;
-      let width = img.width;
-      let height = img.height;
-
-      if (width > maxDim || height > maxDim) {
-        if (width > height) {
-          height = Math.round((height * maxDim) / width);
-          width = maxDim;
+      if (targetWidth > maxDim || targetHeight > maxDim) {
+        if (targetWidth > targetHeight) {
+          targetHeight = Math.round((targetHeight * maxDim) / targetWidth);
+          targetWidth = maxDim;
         } else {
-          width = Math.round((width * maxDim) / height);
-          height = maxDim;
+          targetWidth = Math.round((targetWidth * maxDim) / targetHeight);
+          targetHeight = maxDim;
         }
       }
 
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
 
-      ctx.drawImage(img, 0, 0, width, height);
+      if (isLandscape) {
+        ctx.translate(targetWidth / 2, targetHeight / 2);
+        ctx.rotate(Math.PI / 2); // Rotate 90 degrees clockwise
+        ctx.drawImage(img, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
+        // Reset transform to keep it clean for subsequent pixel manipulation
+        ctx.setTransform(1, 0, 0, 1, 0, 0); 
+      } else {
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+      }
+
+      const width = targetWidth;
+      const height = targetHeight;
       const imgData = ctx.getImageData(0, 0, width, height);
       const d = imgData.data;
 
