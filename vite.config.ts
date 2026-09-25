@@ -15,18 +15,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'node_modules/onnxruntime-web/dist/*.wasm',
-          dest: ''
-        },
-        {
-          src: 'node_modules/onnxruntime-web/dist/*.mjs',
-          dest: ''
-        }
-      ]
-    }),
+    
     {
       name: 'version-generator',
       buildStart() {
@@ -102,6 +91,14 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://splitbill.techfliq.com',
+        changeOrigin: true
+      }
+    }
+  },
   worker: {
     format: 'es',
   },
@@ -130,3 +127,5 @@ export default defineConfig({
     environment: 'node',
   }
 });
+
+

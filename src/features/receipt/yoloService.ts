@@ -5,7 +5,8 @@ let session: ort.InferenceSession | null = null;
 export async function initYolo() {
   if (!session) {
     ort.env.wasm.numThreads = 1;
-    ort.env.wasm.wasmPaths = '/';
+    // Load WASM from CDN to prevent Cloudflare Pages 25MB file size limit errors during deployment
+    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/';
     session = await ort.InferenceSession.create('/yolo-total.onnx', { executionProviders: ['wasm'] });
   }
 }
