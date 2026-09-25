@@ -130,18 +130,14 @@ fs.writeFileSync(path.join(distPath, 'sitemap.xml'), sitemap);
 console.log('Generated sitemap.xml');
 
 
-const srcDir = path.join(__dirname, '../node_modules/onnxruntime-web/dist');
-const destDir = path.join(__dirname, '../dist');
-const files = fs.readdirSync(srcDir);
-for (const file of files) {
-  if (file.endsWith('.wasm') || file.endsWith('.mjs')) {
-    fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
-    console.log('Copied', file);
+
+const assetsDir = path.join(distPath, 'assets');
+if (fs.existsSync(assetsDir)) {
+  const assetFiles = fs.readdirSync(assetsDir);
+  for (const file of assetFiles) {
+    if (file.endsWith('.wasm')) {
+      fs.unlinkSync(path.join(assetsDir, file));
+      console.log('Deleted huge bundled WASM file to satisfy Cloudflare limits:', file);
+    }
   }
 }
-
-
-
-
-
-
