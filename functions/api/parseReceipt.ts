@@ -13,7 +13,7 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ error: 'AI API Key not configured on server (Missing GROQ_API_KEY)' }), { status: 500 });
     }
 
-    const prompt = \
+    const prompt = `
 Extract the list of ordered food/drink items from the following raw OCR text of a restaurant receipt.
 Ignore taxes, subtotals, service charges, tips, and header/footer garbage.
 Return ONLY a valid JSON object matching this schema:
@@ -22,23 +22,23 @@ Return ONLY a valid JSON object matching this schema:
   "items": [
     {
       "name": "Cleaned up item name",
-      "quantity": number (default to 1 if unknown),
-      "totalPrice": number (the final price for this row, e.g., 90.00)
+      "quantity": 1,
+      "totalPrice": 90.00
     }
   ],
-  "grandTotal": number (the final total of the entire receipt, including taxes, e.g., 2773.00)
+  "grandTotal": 2773.00
 }
 
 RAW OCR TEXT:
-\
-\;
+${rawText}
+`;
 
     // If it's a Groq key (starts with gsk_)
     if (apiKey.startsWith('gsk_')) {
       const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': \Bearer \\,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -63,7 +63,7 @@ RAW OCR TEXT:
     }
 
     // Fallback to Gemini if it's not a Groq key
-    const geminiRes = await fetch(\https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\\, {
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
